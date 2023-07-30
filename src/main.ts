@@ -3,9 +3,8 @@ import App from './App.vue'
 
 createApp(App).mount('#app')
 
-const fun=()=>
-{
-    console.log("322332");
+const fun = () => {
+  console.log('322332')
 }
 
-fun();
+fun()
