@@ -1,19 +1,26 @@
 <template>
   <div class="box">
-    <h1>我是APP</h1>
+    <router-view></router-view>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { onMounted } from 'vue';
+import { reqLogin } from '@/api/user';
+onMounted(() => {
+  reqLogin({
+    username: 'admin',
+    password: '111111',
+  }).then((res) => {
+    console.log(res);
+  });
+});
+</script>
 
 <style scoped lang="scss">
-.box {
-  width: 600px;
-  height: 600px;
-  background: #000;
-
+div {
   h1 {
-    color: #fff;
+    color: $base-color;
   }
 }
 </style>
