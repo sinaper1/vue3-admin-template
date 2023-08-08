@@ -11,6 +11,8 @@ import App from '@/App.vue';
 import globalComponent from '@/components/index';
 //引入路由
 import router from '@/router';
+//引入仓库
+import pinia from '@/store';
 //引入全局样式
 import '@/styles/index.scss';
 //获取应用实例对象
@@ -23,6 +25,8 @@ app.use(ElementPlus, {
 app.use(globalComponent);
 //注册模板路由
 app.use(router);
+//安装仓库
+app.use(pinia);
 //输出全局配置
 // console.log(import.meta.env)
 //将应用挂载到挂载点上

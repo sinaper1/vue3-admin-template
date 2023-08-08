@@ -5,11 +5,12 @@ export interface loginForm {
 }
 
 interface dataType {
-  token: string;
+  token?: string;
+  message?: string;
 }
 
 //登陆接口返回的数据类型
-export interface loginResForm {
+export interface loginResData {
   code: number;
   data: dataType;
 }
@@ -31,7 +32,7 @@ interface user {
 }
 
 //服务器返回用户相关的数据类型
-export interface userResForm {
+export interface userResData {
   code: number;
   data: user;
 }
