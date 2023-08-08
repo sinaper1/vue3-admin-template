@@ -46,11 +46,11 @@ import { useRouter } from 'vue-router';
 import { ElNotification } from 'element-plus';
 //引入用户相关的小仓库
 import useUserStore from '@/store/modules/user';
-import {getTime} from "@/utils/time";
+import { getTime } from '@/utils/time';
 //获取路由器
 let $router = useRouter();
 //收集账号与密码的数据
-let loginForm = reactive({ username: 'admin', password: '111111' });
+let loginForm = reactive({ username: 'admin', password: 'James#1984' });
 //获取el-form组件
 let loginForms = ref();
 let loading = ref(false);
@@ -67,7 +67,7 @@ const login = async () => {
     ElNotification({
       type: 'success',
       message: '欢迎回来',
-      title: `HI, ${getTime()}好`
+      title: `HI, ${getTime()}好`,
     });
   } catch (error: string) {
     loading.value = false;
@@ -77,16 +77,49 @@ const login = async () => {
     });
   }
 };
+//自定义校验用户名的规则
+const validatorUserName = (rule: any, value: any, callback: any) => {
+  //rule:校验规则对象
+  //value:文本内容
+  //callback:回调函数
+  //使用正则表达式判断用户名（五到十位的数字、中文、字母）
+  if (/^[A-Za-z0-9\u4e00-\u9fa5]{5,10}$/.test(value)) {
+    callback();
+  } else {
+    callback(new Error('请输入5到10位的数字、中文、大小写字母！'));
+  }
+};
+//自定义校验密码的规则
+const validatorPassword = (rule: any, value: any, callback: any) => {
+  //rule:校验规则对象
+  //value:文本内容
+  //callback:回调函数
+  //使用正则表达式判断密码是否为强密码(必须包含大小写字母和数字的组合，可以使用特殊字符，长度在8-10之间)
+  if (/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$/.test(value)) {
+    callback();
+  } else {
+    callback(
+      new Error(
+        '密码必须包含大小写字母和数字的组合，可以使用特殊字符，长度在8-10之间！',
+      ),
+    );
+  }
+};
 //表单校验的配置
 const rules = {
   username: [
-    // { required: true, message: '用户名不能为空！', trigger: 'blur' },
-    { required: true, min: 4, max: 10, message: '账号长度至少四位，最多十位！', trigger: 'blur' },
+    {
+      trigger: 'change',
+      validator: validatorUserName,
+    },
   ],
   password: [
-    { required: true, min: 6, max: 15, message: '密码长度至少六位，最多十五位！', trigger: 'blur' },
+    {
+      trigger: 'change',
+      validator: validatorPassword,
+    },
   ],
-}
+};
 </script>
 
 <style scoped lang="scss">
