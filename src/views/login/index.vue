@@ -10,7 +10,7 @@
           ref="loginForms"
         >
           <h1>Hello</h1>
-          <h2>欢迎来到硅谷甄选</h2>
+          <h2>欢迎来到詹韦连线</h2>
           <el-form-item prop="username">
             <el-input :prefix-icon="User" v-model="loginForm.username" />
           </el-form-item>

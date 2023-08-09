@@ -1,2 +1,17 @@
 //引入重置默认样式
 @import './reset.scss';
+//滚动条外观设置
+::-webkit-scrollbar{
+  //滚动条背景区域的高度
+  width: 10px;
+}
+::-webkit-scrollbar-track{
+  //滚动条背景区域的背景颜色
+  background-color: $base-menu-background;
+}
+::-webkit-scrollbar-thumb{
+  //滚动条外观设置
+  width: 10px;
+  background-color: #95d475;
+  border-radius: 10px;
+}
