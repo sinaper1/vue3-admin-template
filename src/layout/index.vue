@@ -8,7 +8,7 @@
     <div class="layout_tabbar">2</div>
     <!--  内容展示区域  -->
     <div class="layout_main">
-      <p style="height: 1000px;background-color: #337ecc">段落</p>
+      <p style="height: 1000px; background-color: #337ecc">段落</p>
     </div>
   </div>
 </template>
@@ -19,15 +19,15 @@ import Logo from './logo/index.vue';
 </script>
 
 <style scoped lang="scss">
-.layout_container{
+.layout_container {
   width: 100%;
   height: 100vh;
-  .layout_slider{
+  .layout_slider {
     width: $base-menu-width;
     height: 100vh;
     background-color: $base-menu-background;
   }
-  .layout_tabbar{
+  .layout_tabbar {
     position: fixed;
     top: 0;
     //right: 0;
@@ -35,7 +35,7 @@ import Logo from './logo/index.vue';
     width: calc(100% - $base-menu-width);
     height: $base-tabbar-height;
   }
-  .layout_main{
+  .layout_main {
     position: absolute;
     width: calc(100% - $base-menu-width);
     height: calc(100vh - $base-tabbar-height);
