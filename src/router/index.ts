@@ -1,12 +1,11 @@
 // 路由配置
 import { createRouter, createWebHashHistory } from 'vue-router';
-import { homeRoute } from '@/router/home';
-import { loginRoute } from '@/router/login';
+import {constantRoute} from "@/router/router";
 
 let router = createRouter({
   //    路由模式hash
   history: createWebHashHistory(),
-  routes: [...homeRoute, ...loginRoute],
+  routes: [...constantRoute],
   //滚动行为
   scrollBehavior() {
     return {

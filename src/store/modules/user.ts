@@ -3,12 +3,14 @@ import { reqLogin } from '@/api/user';
 import type { loginForm, loginResData } from '@/api/user/type';
 import { UserState } from '@/store/modules/types/type';
 import { SET_LOCAL_STORAGE, GET_LOCAL_STORAGE } from '@/utils/localStorage';
+import {constantRoute} from "@/router/router";
 
 let useUserStore = defineStore('User', {
   //存储数据
   state: (): UserState => {
     return {
       token: GET_LOCAL_STORAGE('TOKEN'),
+      menuRoutes: constantRoute, // 存储路由数组
     };
   },
   //异步|逻辑的地方
