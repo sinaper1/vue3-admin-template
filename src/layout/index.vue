@@ -5,11 +5,7 @@
       <Logo></Logo>
       <!--展示左侧菜单-->
       <el-scrollbar class="scrollbar">
-        <el-menu
-            background-color="#001529"
-            text-color="#fff"
-            :router="false"
-        >
+        <el-menu background-color="#001529" text-color="#fff" :router="false">
           <!--动态生成路由-->
           <Menu :menuList="userStore.menuRoutes"></Menu>
         </el-menu>
@@ -41,10 +37,10 @@ let userStore = useUserStore();
     width: $base-menu-width;
     height: 100vh;
     background-color: $base-menu-background;
-    .scrollbar{
+    .scrollbar {
       width: 100%;
       height: calc(100vh - $base-menu-logo-height);
-      .el-menu{
+      .el-menu {
         border-right: none;
       }
     }

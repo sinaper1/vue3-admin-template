@@ -8,19 +8,17 @@
   </router-view>
 </template>
 
-<script setup lang="ts">
-
-</script>
+<script setup lang="ts"></script>
 
 <style scoped lang="scss">
-.fade-enter-from{
+.fade-enter-from {
   opacity: 0;
   transform: rotate(0);
 }
-.fade-enter-active{
-  transition: all .3s;
+.fade-enter-active {
+  transition: all 0.3s;
 }
-.fade-enter-to{
+.fade-enter-to {
   opacity: 1;
   transform: scale(1);
 }

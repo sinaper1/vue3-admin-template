@@ -3,7 +3,7 @@ import { reqLogin } from '@/api/user';
 import type { loginForm, loginResData } from '@/api/user/type';
 import { UserState } from '@/store/modules/types/type';
 import { SET_LOCAL_STORAGE, GET_LOCAL_STORAGE } from '@/utils/localStorage';
-import {constantRoute} from "@/router/router";
+import { constantRoute } from '@/router/router';
 
 let useUserStore = defineStore('User', {
   //存储数据
