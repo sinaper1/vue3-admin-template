@@ -5,7 +5,7 @@ export const homeRoute = [
     name: 'layout',
     meta: {
       title: 'layout',
-      hidden: false, //路由是否在菜单隐藏，true则隐藏，false则显示
+      hidden: true, //路由是否在菜单隐藏，true则隐藏，false则显示
       icon: 'Operation', //菜单左侧图标
     },
     redirect: '/home',

@@ -8,6 +8,8 @@ export const productRoute = [
       hidden: false,
       icon: 'Goods',
     },
+    //重定向到二级目录的第一个子项
+    redirect: '/product/trademark',
     children: [
       {
         path: '/product/trademark',

@@ -8,7 +8,7 @@
         <el-menu
           background-color="#001529"
           text-color="#fff"
-          :router="false"
+          :router="true"
           :default-active="$route.path"
           :collapse="layoutSettingStore.fold"
         >

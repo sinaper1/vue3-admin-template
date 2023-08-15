@@ -5,6 +5,7 @@ let useLayoutSettingStore = defineStore('SettingStore', {
   state: () => {
     return {
       fold: false, //菜单折叠控制
+      refresh: false, //页面刷新
     };
   },
 });

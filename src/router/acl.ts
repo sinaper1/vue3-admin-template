@@ -8,6 +8,8 @@ export const aclRoute = [
       hidden: false,
       icon: 'Lock',
     },
+    //重定向到二级目录的第一个子项
+    redirect: '/acl/user',
     children: [
       {
         path: '/acl/user',
