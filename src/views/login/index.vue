@@ -42,13 +42,14 @@
 <script setup lang="ts">
 import { User, Lock } from '@element-plus/icons-vue';
 import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { ElNotification } from 'element-plus';
 //引入用户相关的小仓库
 import useUserStore from '@/store/modules/user';
 import { getTime } from '@/utils/time';
 //获取路由器
 let $router = useRouter();
+let $route = useRoute();
 //收集账号与密码的数据
 let loginForm = reactive({ username: 'admin', password: 'James#1984' });
 //获取el-form组件
@@ -62,8 +63,10 @@ const login = async () => {
   try {
     await useStore.useLogin(loginForm);
     loading.value = false;
-    //  编程式导航跳转到首页
-    $router.push('/');
+    // 判断路由query是否有参数，有则跳转到query的参数redirect，没有则跳转到首页
+    let redirect: any = $route.query.redirect;
+    //  编程式导航跳转到首页或redirect
+    $router.push({ path: redirect || '/' });
     ElNotification({
       type: 'success',
       message: '欢迎回来',
