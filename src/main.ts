@@ -13,6 +13,8 @@ import globalComponent from '@/components/index';
 import router from '@/router';
 //引入仓库
 import pinia from '@/store';
+// 引入路由鉴权
+import './permisstion';
 //引入全局样式
 import '@/styles/index.scss';
 //获取应用实例对象

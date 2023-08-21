@@ -39,6 +39,8 @@ const useUserStore = defineStore('User', {
       if (result.code === 200 && result.data && result.data.checkUser) {
         this.userName = result.data.checkUser.username;
         this.avatar = result.data.checkUser.avatar;
+      } else {
+        return Promise.reject('获取用户信息失败！');
       }
     },
     async userLogout() {
