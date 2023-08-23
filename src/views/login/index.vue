@@ -51,7 +51,7 @@ import { getTime } from '@/utils/time';
 let $router = useRouter();
 let $route = useRoute();
 //收集账号与密码的数据
-let loginForm = reactive({ username: 'admin', password: 'James#1984' });
+let loginForm = reactive({ username: 'admin', password: 'atguigu123' });
 //获取el-form组件
 let loginForms = ref();
 let loading = ref(false);
@@ -98,7 +98,8 @@ const validatorPassword = (rule: any, value: any, callback: any) => {
   //value:文本内容
   //callback:回调函数
   //使用正则表达式判断密码是否为强密码(必须包含大小写字母和数字的组合，可以使用特殊字符，长度在8-10之间)
-  if (/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$/.test(value)) {
+  // if (/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,10}$/.test(value)) {
+  if (/^(?=.*\d)(?=.*[a-z]).{8,10}$/.test(value)) {
     callback();
   } else {
     callback(

@@ -38,14 +38,13 @@ router.beforeEach(async (to: any, from: any, next: any) => {
         } catch (error) {
           //   token过期或者token被修改
           // 退出登录
-          userStore.userLogout();
+          await userStore.userLogout();
           next({ path: '/login', query: { redirect: to.path } });
         }
       }
     }
   } else {
     //  用户未登录
-    console.log(to, '--to---');
     if (to.path === '/login') {
       next();
     } else {

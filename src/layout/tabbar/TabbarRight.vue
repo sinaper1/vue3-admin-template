@@ -61,11 +61,11 @@ const handleFullScreen = () => {
     document.exitFullscreen();
   }
 };
-const handleLogout = () => {
+const handleLogout = async () => {
   // 1：发起退出登录请求
   // 2：仓库当中关于相关的数据清空
   // 3：跳转到登录页面
-  useStore.userLogout();
+  await useStore.userLogout();
   $router.push({ path: '/login', query: { redirect: $route.path } });
 };
 </script>
