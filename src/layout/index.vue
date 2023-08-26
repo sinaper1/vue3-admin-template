@@ -92,7 +92,7 @@ export default {
     left: $base-menu-width;
     padding: 20px;
     overflow: auto;
-    background-color: #95d475;
+    //background-color: #95d475;
     transition: all 0.3s;
     &.fold {
       width: calc(100vw - $base-menu-min-width);
