@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { reqHasTrademark, reqDelTrademark } from '@/api/product/trademark';
+import { ref, onMounted, reactive } from 'vue';
+import type { UploadProps } from 'element-plus';
+import { ElMessage } from 'element-plus';
+import {
+  reqHasTrademark,
+  reqDelTrademark,
+  reqAddOrUpdateTrademark,
+} from '@/api/product/trademark';
 import type { Records } from '@/api/product/trademark/type';
-import { TrademarkResponseData } from '@/api/product/trademark/type';
+import { TrademarkResponseData, Trademark } from '@/api/product/trademark/type';
 
 const currentPage = ref<number>(1);
 const pageSize = ref<number>(10);
@@ -11,16 +17,29 @@ const background = ref<boolean>(true);
 const total = ref<number>(0);
 // 表格数据
 const dataSource = ref<Records>([]);
+// 控制对话框的显示
+const dialogFormVisible = ref<boolean>(false);
+// 对话框的标题
+const dialogFormTitle = ref<string>('');
+// 定义收集新增品牌的数据
+let trademarkParams = reactive<Trademark>({
+  // 品牌名称
+  tmName: '',
+  // 品牌logo图片
+  logoUrl: '',
+});
 const handleSizeChange = (val: number) => {
-  pageSize.value = val;
+  // currentPage.value = 1;
+  // pageSize.value = val;
   getHasTrademark();
 };
-const handleCurrentChange = (val: number) => {
-  currentPage.value = val;
-  getHasTrademark();
-};
+// const handleCurrentChange = (val: number) => {
+//   currentPage.value = val;
+//   getHasTrademark();
+// };
 // 查询列表数据
-const getHasTrademark = async () => {
+const getHasTrademark = async (pager = 1) => {
+  currentPage.value = pager;
   let result: TrademarkResponseData = await reqHasTrademark(
     currentPage.value,
     pageSize.value,
@@ -30,23 +49,83 @@ const getHasTrademark = async () => {
     dataSource.value = result.data.records;
   }
 };
-const handleEdit = async (index, row) => {
-  console.log(index, row, '---row---');
+// 点击添加品牌按钮
+const handleAdd = async () => {
+  // 清空之前的数据
+  trademarkParams.id = undefined;
+  trademarkParams.logoUrl = '';
+  trademarkParams.tmName = '';
+  dialogFormTitle.value = '添加品牌';
+  dialogFormVisible.value = true;
 };
+// 点击修改品牌按钮
+const handleEdit = async (row: Trademark) => {
+  // 给对话框赋值当前选择的数据
+  trademarkParams.id = row.id;
+  trademarkParams.logoUrl = row.logoUrl;
+  trademarkParams.tmName = row.tmName;
+  dialogFormTitle.value = '修改品牌';
+  dialogFormVisible.value = true;
+};
+// 点击删除按钮
 const handleDelete = async (id: number) => {
-  reqDelTrademark(id);
-  console.log(id, '---index---');
+  let result = await reqDelTrademark(id);
+  if (result.code === 200) {
+    ElMessage.success('删除品牌成功！');
+    await getHasTrademark();
+  } else {
+    ElMessage.error('删除品牌失败！');
+  }
 };
 // 组件挂载完毕钩子函数
 onMounted(() => {
   getHasTrademark();
 });
+const handleAvatarSuccess: UploadProps['onSuccess'] = (
+  response,
+  uploadFile,
+) => {
+  // trademarkParams.logoUrl = URL.createObjectURL(uploadFile.raw!);
+  trademarkParams.logoUrl = response.data;
+};
+
+// 图片上传成功之前约束文件的类型与大小
+const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
+  const fileTypeArr = ['image/jpeg', 'image/png', 'image/gif'];
+  if (!fileTypeArr.includes(rawFile.type)) {
+    // 如果文件类型不为jpg、png、gif则不能上传
+    ElMessage.error('图片类型必须为jpg、png、gif!');
+    return false;
+  } else if (rawFile.size / 1024 / 1024 > 2) {
+    // 如果文件大于2M则不能上传
+    ElMessage.error('图片大小不能超过2M!');
+    return false;
+  }
+  return true;
+};
+// 对话框取消按钮
+const handleCancel = () => {
+  dialogFormVisible.value = false;
+};
+// 对话框确定按钮
+const handleSubmit = async () => {
+  let result = await reqAddOrUpdateTrademark(trademarkParams);
+  if (result.code === 200) {
+    dialogFormVisible.value = false;
+    ElMessage.success(trademarkParams.id ? '修改品牌成功！' : '添加品牌成功！');
+    await getHasTrademark(currentPage.value);
+  } else {
+    ElMessage.error(trademarkParams.id ? '修改品牌失败！' : '添加品牌失败！');
+  }
+};
 </script>
 
 <template>
   <el-card class="box-card">
     <div>
-      <el-button type="primary" icon="Plus">添加品牌</el-button>
+      <el-button type="primary" icon="Plus" @click="handleAdd">
+        添加品牌
+      </el-button>
       <el-table :data="dataSource" style="margin: 10px 0" border>
         <el-table-column label="序号" width="80" align="center" type="index" />
         <el-table-column label="品牌名称" align="center" prop="tmName" />
@@ -62,7 +141,7 @@ onMounted(() => {
           <template #default="scope">
             <el-button
               size="small"
-              @click="handleEdit(scope.$index, scope.row)"
+              @click="handleEdit(scope.row)"
               type="primary"
               icon="Edit"
             ></el-button>
@@ -84,10 +163,70 @@ onMounted(() => {
         layout="prev, pager, next, jumper, ->, sizes, total"
         :total="total"
         @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+        @current-change="getHasTrademark"
       />
     </div>
   </el-card>
+  <!--对话框组件：品牌的添加与修改-->
+  <el-dialog v-model="dialogFormVisible" :title="dialogFormTitle">
+    <el-form style="width: 80%">
+      <el-form-item label="品牌名称" label-width="80px">
+        <el-input
+          placeholder="请您输入品牌名称"
+          v-model="trademarkParams.tmName"
+        ></el-input>
+      </el-form-item>
+      <el-form-item label="品牌LOGO" label-width="80px">
+        <el-upload
+          class="avatar-uploader"
+          action="/api/admin/product/fileUpload"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload"
+        >
+          <img
+            v-if="trademarkParams.logoUrl"
+            :src="trademarkParams.logoUrl"
+            class="avatar"
+          />
+          <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+        </el-upload>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="handleCancel">取消</el-button>
+      <el-button type="primary" @click="handleSubmit">确定</el-button>
+    </template>
+  </el-dialog>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+</style>
+
+<style>
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
+}
+</style>
