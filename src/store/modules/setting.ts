@@ -1,7 +1,7 @@
 //layout组件相关的配置
 import { defineStore } from 'pinia';
 
-let useLayoutSettingStore = defineStore('SettingStore', {
+const useLayoutSettingStore = defineStore('SettingStore', {
   state: () => {
     return {
       fold: false, //菜单折叠控制

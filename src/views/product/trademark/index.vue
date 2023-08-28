@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, nextTick } from 'vue';
 import type { UploadProps } from 'element-plus';
 import { ElMessage } from 'element-plus';
 import {
@@ -21,6 +21,8 @@ const dataSource = ref<Records>([]);
 const dialogFormVisible = ref<boolean>(false);
 // 对话框的标题
 const dialogFormTitle = ref<string>('');
+// 获取el-from组件实例
+const formRef = ref();
 // 定义收集新增品牌的数据
 let trademarkParams = reactive<Trademark>({
   // 品牌名称
@@ -50,21 +52,34 @@ const getHasTrademark = async (pager = 1) => {
   }
 };
 // 点击添加品牌按钮
-const handleAdd = async () => {
+const handleAdd = () => {
   // 清空之前的数据
   trademarkParams.id = undefined;
   trademarkParams.logoUrl = '';
   trademarkParams.tmName = '';
   dialogFormTitle.value = '添加品牌';
+  // formRef.value?.clearValidate('tmName');
+  // formRef.value?.clearValidate('logoUrl');
+  nextTick(() => {
+    // 清除上一次的错误校验
+    formRef.value.clearValidate('tmName');
+    formRef.value.clearValidate('logoUrl');
+  });
   dialogFormVisible.value = true;
 };
 // 点击修改品牌按钮
-const handleEdit = async (row: Trademark) => {
+const handleEdit = (row: Trademark) => {
   // 给对话框赋值当前选择的数据
-  trademarkParams.id = row.id;
-  trademarkParams.logoUrl = row.logoUrl;
-  trademarkParams.tmName = row.tmName;
+  // trademarkParams.id = row.id;
+  // trademarkParams.logoUrl = row.logoUrl;
+  // trademarkParams.tmName = row.tmName;
+  Object.assign(trademarkParams, row);
   dialogFormTitle.value = '修改品牌';
+  nextTick(() => {
+    // 清除上一次的错误校验
+    formRef.value.clearValidate('tmName');
+    formRef.value.clearValidate('logoUrl');
+  });
   dialogFormVisible.value = true;
 };
 // 点击删除按钮
@@ -81,12 +96,14 @@ const handleDelete = async (id: number) => {
 onMounted(() => {
   getHasTrademark();
 });
+// 图片上传成功
 const handleAvatarSuccess: UploadProps['onSuccess'] = (
   response,
   uploadFile,
 ) => {
   // trademarkParams.logoUrl = URL.createObjectURL(uploadFile.raw!);
   trademarkParams.logoUrl = response.data;
+  formRef.value.clearValidate('logoUrl');
 };
 
 // 图片上传成功之前约束文件的类型与大小
@@ -109,6 +126,8 @@ const handleCancel = () => {
 };
 // 对话框确定按钮
 const handleSubmit = async () => {
+  // 先进行表单校验
+  await formRef.value.validate();
   let result = await reqAddOrUpdateTrademark(trademarkParams);
   if (result.code === 200) {
     dialogFormVisible.value = false;
@@ -117,6 +136,27 @@ const handleSubmit = async () => {
   } else {
     ElMessage.error(trademarkParams.id ? '修改品牌失败！' : '添加品牌失败！');
   }
+};
+const validateLogoUrl = (rule: any, value: any, callback: any) => {
+  // 校验品牌LOGO
+  if (value) {
+    callback();
+  } else {
+    callback(new Error('请上传品牌LOGO！'));
+  }
+};
+const validateTmName = (rule: any, value: any, callback: any) => {
+  //  校验品牌名称
+  if (value.trim().length >= 2) {
+    callback();
+  } else {
+    // 校验未通过
+    callback(new Error('品牌名称要大于等于两个字符！'));
+  }
+};
+const rules = {
+  logoUrl: [{ required: true, validator: validateLogoUrl }],
+  tmName: [{ required: true, validator: validateTmName, trigger: 'blur' }],
 };
 </script>
 
@@ -169,14 +209,19 @@ const handleSubmit = async () => {
   </el-card>
   <!--对话框组件：品牌的添加与修改-->
   <el-dialog v-model="dialogFormVisible" :title="dialogFormTitle">
-    <el-form style="width: 80%">
-      <el-form-item label="品牌名称" label-width="80px">
+    <el-form
+      style="width: 80%"
+      :model="trademarkParams"
+      :rules="rules"
+      ref="formRef"
+    >
+      <el-form-item label="品牌名称" label-width="100px" prop="tmName">
         <el-input
           placeholder="请您输入品牌名称"
           v-model="trademarkParams.tmName"
         ></el-input>
       </el-form-item>
-      <el-form-item label="品牌LOGO" label-width="80px">
+      <el-form-item label="品牌LOGO" label-width="100px" prop="logoUrl">
         <el-upload
           class="avatar-uploader"
           action="/api/admin/product/fileUpload"
