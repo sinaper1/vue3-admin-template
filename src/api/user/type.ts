@@ -46,7 +46,7 @@ export interface loginFormData {
 
 // 定义全部接口返回数据都有的类型
 export interface ResponseData {
-  conde: number;
+  code: number;
   message: string;
   ok: boolean;
 }
@@ -62,7 +62,7 @@ export interface userInfoResponseData extends ResponseData {
     routes: string[];
     buttons: string[];
     roles: string[];
-    userName: string;
+    name: string;
     avatar: string;
   };
 }

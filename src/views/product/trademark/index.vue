@@ -87,7 +87,9 @@ const handleDelete = async (id: number) => {
   let result = await reqDelTrademark(id);
   if (result.code === 200) {
     ElMessage.success('删除品牌成功！');
-    await getHasTrademark();
+    await getHasTrademark(
+      dataSource.value.length > 1 ? currentPage.value : currentPage.value - 1,
+    );
   } else {
     ElMessage.error('删除品牌失败！');
   }
@@ -185,12 +187,15 @@ const rules = {
               type="primary"
               icon="Edit"
             ></el-button>
-            <el-button
-              size="small"
-              type="danger"
-              @click="handleDelete(scope.row.id)"
-              icon="Delete"
-            ></el-button>
+            <el-popconfirm
+              title="确认删除这条数据？"
+              @confirm="handleDelete(scope.row.id)"
+              width="200"
+            >
+              <template #reference>
+                <el-button size="small" type="danger" icon="Delete"></el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>

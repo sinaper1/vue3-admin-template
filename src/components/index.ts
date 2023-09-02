@@ -1,8 +1,12 @@
 import type { App, Component } from 'vue';
 //引入component文件夹中的组件
 import SvgIcon from './SvgIcon/index.vue';
+import ThreeLevelSelect from './ThreeLevelSelect/index.vue';
 //全局对接
-const allGlobalComponent: { [name: string]: Component } = { SvgIcon };
+const allGlobalComponent: { [name: string]: Component } = {
+  SvgIcon,
+  ThreeLevelSelect,
+};
 //引入element-plus提供全部图标组件
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 //对外暴露插件对象
