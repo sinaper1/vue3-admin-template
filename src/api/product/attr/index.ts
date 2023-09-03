@@ -1,6 +1,10 @@
 // 属性管理
 import request from '@/utils/request';
-import type { CategoryResponseData, AttrInfoResponse, AttrInfo } from '@/api/product/attr/type';
+import type {
+  CategoryResponseData,
+  AttrInfoResponse,
+  AttrInfo,
+} from '@/api/product/attr/type';
 
 enum API {
   CATEGORY1_URL = '/admin/product/getCategory1',

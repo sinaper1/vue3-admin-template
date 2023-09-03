@@ -57,7 +57,7 @@ const handleCancel = () => {
 };
 const handleSubmit = () => {
   console.log(121212);
-}
+};
 </script>
 <template>
   <div>
@@ -168,9 +168,7 @@ const handleSubmit = () => {
           <el-table-column label="属性值名称" align="center"></el-table-column>
           <el-table-column label="操作" align="center"></el-table-column>
         </el-table>
-        <el-button type="primary" @click="handleSubmit">
-          保存
-        </el-button>
+        <el-button type="primary" @click="handleSubmit">保存</el-button>
         <el-button @click="handleCancel">取消</el-button>
       </div>
     </el-card>
