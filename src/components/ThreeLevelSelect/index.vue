@@ -10,6 +10,7 @@ defineProps({
   category1Data: Array,
   category2Data: Array,
   category3Data: Array,
+  visible: Boolean,
 });
 // 引入父组件传过来的事件
 const emit = defineEmits([
@@ -39,7 +40,11 @@ const handleCategory3 = (value: number) => {
   <div>
     <el-form :inline="true">
       <el-form-item :label="title1?.[0]">
-        <el-select @change="handleCategory1" v-model="value">
+        <el-select
+          @change="handleCategory1"
+          v-model="value"
+          :disabled="visible"
+        >
           <el-option
             v-for="item in category1Data"
             :key="item.id"
@@ -49,7 +54,11 @@ const handleCategory3 = (value: number) => {
         </el-select>
       </el-form-item>
       <el-form-item :label="title1?.[1]">
-        <el-select @change="handleCategory2" v-model="value2">
+        <el-select
+          @change="handleCategory2"
+          v-model="value2"
+          :disabled="visible"
+        >
           <el-option
             v-for="item in category2Data"
             :key="item.id"
@@ -59,7 +68,11 @@ const handleCategory3 = (value: number) => {
         </el-select>
       </el-form-item>
       <el-form-item :label="title1?.[2]">
-        <el-select @change="handleCategory3" v-model="value3">
+        <el-select
+          @change="handleCategory3"
+          v-model="value3"
+          :disabled="visible"
+        >
           <el-option
             v-for="item in category3Data"
             :key="item.id"

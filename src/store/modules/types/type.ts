@@ -1,5 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router';
-import type { CategoryObj } from '@/api/product/attr/type';
+import type { CategoryData, AttrInfoData } from '@/api/product/attr/type';
 
 export interface UserState {
   token: string | null;
@@ -12,10 +12,12 @@ export interface UserState {
 }
 
 export interface AttrState {
+  pending: boolean;
   c1Id: number | string;
-  category1Data: CategoryObj[];
+  category1Data: CategoryData;
   c2Id: number | string;
-  category2Data: CategoryObj[];
+  category2Data: CategoryData;
   c3Id: number | string;
-  category3Data: CategoryObj[];
+  category3Data: CategoryData;
+  AttrInfoData: AttrInfoData;
 }
