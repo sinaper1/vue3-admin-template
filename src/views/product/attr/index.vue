@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { reqDeleteAttr } from '@/api/product/attr';
+import { onMounted, ref, reactive } from 'vue';
+import { reqDeleteAttr, reqSaveAttr } from '@/api/product/attr';
 import useAttrStore from '@/store/modules/product/attr';
 import { ElMessage } from 'element-plus';
+import { AttrInfo } from '@/api/product/attr/type';
 let attrStore = useAttrStore();
 // visible为true现在添加或修改卡片，否则显示table数据卡片
 const visible = ref<boolean>(false);
+// 收集新增或修改属性的对象
+let attrParams = reactive<AttrInfo>({
+  attrName: '', //新增的属性名字
+  categoryId: '', // 三级分类的ID
+  categoryLevel: 3, //代表的是三级分类
+  attrValueList: [], //新增的属性值数组
+});
 onMounted(() => {
   // 重新加载页面需清空原有的数据
   attrStore.AttrInfoData = [];
@@ -31,6 +39,7 @@ const handleCategory3 = async (category3Id: number) => {
   attrStore.c3Id = category3Id;
 };
 const handleSearch = async () => {
+  // 查询列表数据
   if (attrStore.c3Id) {
     await attrStore.getAttrInfo();
   } else {
@@ -38,25 +47,67 @@ const handleSearch = async () => {
   }
 };
 const handleDelete = async (id: number) => {
+  // 删除属性
+  attrStore.pending = true;
   const result = await reqDeleteAttr(id);
   if (result.code === 200) {
     await handleSearch();
+    attrStore.pending = false;
     ElMessage.success('删除属性成功！');
   } else {
     ElMessage.error('删除属性失败！');
   }
 };
-const handleEdit = (id?: number) => {
+const handleDeleteAttr = (index: number) => {
+  // 删除属性值
+  attrParams.attrValueList.splice(index, 1);
+};
+const handleEdit = (row: AttrInfo) => {
+  // 编辑或新增属性
+  if (row && row.id) {
+    // 编辑属性
+    Object.assign(attrParams, row);
+  } else {
+    // 新增属性，重设默认数据
+    Object.assign(attrParams, {
+      id: '',
+      attrName: '',
+      categoryId: attrStore.c3Id,
+      attrValueList: [],
+    });
+  }
   visible.value = true;
 };
 const handleAddAttr = () => {
-  visible.value = false;
+  // 添加属性值
+  attrParams.attrValueList.push({
+    valueName: '',
+    // attrId需要判断外层是否有id值
+    attrId: attrParams.id ? attrParams.id : '',
+  });
+  // visible.value = false;
 };
 const handleCancel = () => {
   visible.value = false;
 };
-const handleSubmit = () => {
-  console.log(121212);
+const handleSubmit = async () => {
+  // 保存
+  const result = await reqSaveAttr(attrParams);
+  if (result.code === 200) {
+    if (attrParams.id) {
+      ElMessage.success('修改属性成功！');
+    } else {
+      ElMessage.success('添加属性成功！');
+    }
+    visible.value = false;
+    await handleSearch();
+  } else {
+    if (attrParams.id) {
+      ElMessage.success('修改属性失败！');
+    } else {
+      ElMessage.success('添加属性失败！');
+    }
+  }
 };
 </script>
 <template>
@@ -96,7 +147,7 @@ const handleSubmit = () => {
           border
           style="margin: 10px 0"
           :data="attrStore.AttrInfoData"
-          :v-loading="attrStore.pending"
+          v-loading="attrStore.pending"
           element-loading-text="加载中..."
         >
           <el-table-column
@@ -112,10 +163,10 @@ const handleSubmit = () => {
             prop="attrName"
           ></el-table-column>
           <el-table-column label="属性值名称" align="center">
-            <template #default="{ row, $index }">
+            <template #default="scope">
               <el-tag
                 style="margin: 5px"
-                v-for="(item, i) in row.attrValueList"
+                v-for="item in scope.row.attrValueList"
                 :key="item.id"
               >
                 {{ item.valueName }}
@@ -123,16 +174,16 @@ const handleSubmit = () => {
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center" width="120">
-            <template #default="{ row, $index }">
+            <template #default="scope">
               <el-button
                 type="primary"
                 icon="Edit"
                 size="small"
-                @click="handleEdit(row.id)"
+                @click="handleEdit(scope.row)"
               ></el-button>
               <el-popconfirm
                 title="确认删除这条数据？"
-                @confirm="handleDelete(row.id)"
+                @confirm="handleDelete(scope.row.id)"
                 width="200"
               >
                 <template #reference>
@@ -151,22 +202,53 @@ const handleSubmit = () => {
         <!--     添加属性与修改属性的结构   -->
         <el-form :inline="true">
           <el-form-item label="属性名称">
-            <el-input placeholder="请输入属性名称"></el-input>
+            <el-input
+              placeholder="请输入属性名称"
+              v-model="attrParams.attrName"
+            ></el-input>
           </el-form-item>
         </el-form>
-        <el-button type="primary" icon="Plus" @click="handleAddAttr">
+        <el-button
+          type="primary"
+          icon="Plus"
+          @click="handleAddAttr"
+          :disabled="!attrParams.attrName"
+        >
           添加属性值
         </el-button>
         <el-button @click="handleCancel">取消</el-button>
-        <el-table border style="margin: 10px">
+        <el-table border style="margin: 10px" :data="attrParams.attrValueList">
           <el-table-column
             label="序号"
             width="80px"
             type="index"
             align="center"
           ></el-table-column>
-          <el-table-column label="属性值名称" align="center"></el-table-column>
-          <el-table-column label="操作" align="center"></el-table-column>
+          <el-table-column label="属性值名称" align="center">
+            <template #default="scope">
+              <el-input
+                placeholder="请输入属性值名称"
+                v-model="scope.row.valueName"
+              ></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" align="center">
+            <template #default="scope">
+              <el-popconfirm
+                title="确认删除这条数据？"
+                @confirm="handleDeleteAttr(scope.$index)"
+                width="200"
+              >
+                <template #reference>
+                  <el-button
+                    size="small"
+                    type="danger"
+                    icon="Delete"
+                  ></el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
         </el-table>
         <el-button type="primary" @click="handleSubmit">保存</el-button>
         <el-button @click="handleCancel">取消</el-button>

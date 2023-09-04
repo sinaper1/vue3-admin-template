@@ -58,8 +58,6 @@ const handleAdd = () => {
   trademarkParams.logoUrl = '';
   trademarkParams.tmName = '';
   dialogFormTitle.value = '添加品牌';
-  // formRef.value?.clearValidate('tmName');
-  // formRef.value?.clearValidate('logoUrl');
   nextTick(() => {
     // 清除上一次的错误校验
     formRef.value.clearValidate('tmName');
