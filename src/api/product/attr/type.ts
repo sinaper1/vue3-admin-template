@@ -26,6 +26,7 @@ export interface AttrValue {
   id?: number | string;
   valueName: string;
   attrId?: number | string;
+  flag?: boolean;
 }
 
 // 存储每一个属性值的数据类型

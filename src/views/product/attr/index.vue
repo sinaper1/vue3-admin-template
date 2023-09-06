@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive } from 'vue';
+import { ElMessage } from 'element-plus';
 import { reqDeleteAttr, reqSaveAttr } from '@/api/product/attr';
 import useAttrStore from '@/store/modules/product/attr';
-import { ElMessage } from 'element-plus';
-import { AttrInfo } from '@/api/product/attr/type';
-let attrStore = useAttrStore();
+import { AttrInfo, AttrValue } from '@/api/product/attr/type';
+
+const attrStore = useAttrStore();
 // visible为true现在添加或修改卡片，否则显示table数据卡片
 const visible = ref<boolean>(false);
+// 定义一个响应式数据控制属性值的编辑与查看
+const flag = ref<boolean>(true);
 // 收集新增或修改属性的对象
-let attrParams = reactive<AttrInfo>({
-  attrName: '', //新增的属性名字
+const attrParams = reactive<AttrInfo>({
+  attrName: '', // 新增的属性名字
   categoryId: '', // 三级分类的ID
-  categoryLevel: 3, //代表的是三级分类
-  attrValueList: [], //新增的属性值数组
+  categoryLevel: 3, // 代表的是三级分类
+  attrValueList: [], // 新增的属性值数组
 });
 onMounted(() => {
   // 重新加载页面需清空原有的数据
@@ -84,6 +87,7 @@ const handleAddAttr = () => {
     valueName: '',
     // attrId需要判断外层是否有id值
     attrId: attrParams.id ? attrParams.id : '',
+    flag: true,
   });
   // visible.value = false;
 };
@@ -101,13 +105,39 @@ const handleSubmit = async () => {
     }
     visible.value = false;
     await handleSearch();
+  } else if (attrParams.id) {
+    ElMessage.success('修改属性失败！');
   } else {
-    if (attrParams.id) {
-      ElMessage.success('修改属性失败！');
-    } else {
-      ElMessage.success('添加属性失败！');
-    }
+    ElMessage.success('添加属性失败！');
   }
+};
+const handleBlur = (row: AttrValue, index: number) => {
+  //   属性值输入框失去焦点，把flag变为false
+  if (!row.valueName.trim()) {
+    ElMessage.error('属性值不能为空！');
+    // 删除空的属性值
+    handleDeleteAttr(index);
+    return;
+  }
+  let repeat = attrParams.attrValueList.find((v) => {
+    if (v !== row) {
+      if (v.valueName === row.valueName) {
+        return v;
+      }
+    }
+  });
+  if (repeat) {
+    ElMessage.error('属性值不能重复！');
+    // 删除重复的属性值
+    handleDeleteAttr(index);
+    return;
+  }
+  row.flag = false;
+};
+const handleClick = (row: AttrValue) => {
+  console.log(34343);
+  //   点击属性值的显示框让其变成可以输入
+  row.flag = true;
 };
 </script>
 <template>
@@ -229,7 +259,12 @@ const handleSubmit = async () => {
               <el-input
                 placeholder="请输入属性值名称"
                 v-model="scope.row.valueName"
+                v-if="scope.row.flag"
+                @blur="() => handleBlur(scope.row, scope.$index)"
               ></el-input>
+              <div v-else @click="() => handleClick(scope.row)">
+                {{ scope.row.valueName }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center">
@@ -250,7 +285,16 @@ const handleSubmit = async () => {
             </template>
           </el-table-column>
         </el-table>
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
+        <el-button
+          type="primary"
+          @click="handleSubmit"
+          :disabled="
+            !attrParams.attrValueList.length ||
+            !attrParams?.attrValueList[0]?.valueName
+          "
+        >
+          保存
+        </el-button>
         <el-button @click="handleCancel">取消</el-button>
       </div>
     </el-card>
