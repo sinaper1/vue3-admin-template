@@ -10,6 +10,8 @@ import {
 import type { Records } from '@/api/product/trademark/type';
 import { TrademarkResponseData, Trademark } from '@/api/product/trademark/type';
 
+// loading状态
+const pending = ref<boolean>(false);
 const currentPage = ref<number>(1);
 const pageSize = ref<number>(10);
 const small = ref<boolean>(false);
@@ -41,6 +43,7 @@ const handleSizeChange = (val: number) => {
 // };
 // 查询列表数据
 const getHasTrademark = async (pager = 1) => {
+  pending.value = true;
   currentPage.value = pager;
   let result: TrademarkResponseData = await reqHasTrademark(
     currentPage.value,
@@ -50,6 +53,7 @@ const getHasTrademark = async (pager = 1) => {
     total.value = result.data.total;
     dataSource.value = result.data.records;
   }
+  pending.value = false;
 };
 // 点击添加品牌按钮
 const handleAdd = () => {
@@ -82,6 +86,7 @@ const handleEdit = (row: Trademark) => {
 };
 // 点击删除按钮
 const handleDelete = async (id: number) => {
+  pending.value = true;
   let result = await reqDelTrademark(id);
   if (result.code === 200) {
     ElMessage.success('删除品牌成功！');
@@ -89,6 +94,7 @@ const handleDelete = async (id: number) => {
       dataSource.value.length > 1 ? currentPage.value : currentPage.value - 1,
     );
   } else {
+    pending.value = false;
     ElMessage.error('删除品牌失败！');
   }
 };
@@ -128,6 +134,7 @@ const handleCancel = () => {
 const handleSubmit = async () => {
   // 先进行表单校验
   await formRef.value.validate();
+  pending.value = true;
   let result = await reqAddOrUpdateTrademark(trademarkParams);
   if (result.code === 200) {
     dialogFormVisible.value = false;
@@ -136,6 +143,7 @@ const handleSubmit = async () => {
   } else {
     ElMessage.error(trademarkParams.id ? '修改品牌失败！' : '添加品牌失败！');
   }
+  pending.value = false;
 };
 const validateLogoUrl = (rule: any, value: any, callback: any) => {
   // 校验品牌LOGO
@@ -166,7 +174,13 @@ const rules = {
       <el-button type="primary" icon="Plus" @click="handleAdd">
         添加品牌
       </el-button>
-      <el-table :data="dataSource" style="margin: 10px 0" border>
+      <el-table
+        :data="dataSource"
+        style="margin: 10px 0"
+        border
+        v-loading="pending"
+        element-loading-text="加载中..."
+      >
         <el-table-column label="序号" width="80" align="center" type="index" />
         <el-table-column label="品牌名称" align="center" prop="tmName" />
         <el-table-column label="品牌LOGO" align="center">

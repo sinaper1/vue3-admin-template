@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive, nextTick, onBeforeUnmount } from 'vue';
 import { ElMessage } from 'element-plus';
 import { reqDeleteAttr, reqSaveAttr } from '@/api/product/attr';
 import useAttrStore from '@/store/modules/product/attr';
@@ -8,8 +8,8 @@ import { AttrInfo, AttrValue } from '@/api/product/attr/type';
 const attrStore = useAttrStore();
 // visible为true现在添加或修改卡片，否则显示table数据卡片
 const visible = ref<boolean>(false);
-// 定义一个响应式数据控制属性值的编辑与查看
-const flag = ref<boolean>(true);
+// 存储对应的组件实例el-input
+const inputArr = ref<any>([]);
 // 收集新增或修改属性的对象
 const attrParams = reactive<AttrInfo>({
   attrName: '', // 新增的属性名字
@@ -22,11 +22,14 @@ onMounted(() => {
   attrStore.AttrInfoData = [];
   getCategory1();
 });
+onBeforeUnmount(() => {
+  // 重置仓库数据
+  attrStore.$reset();
+});
 const getCategory1 = async () => {
   await attrStore.useCategory1();
 };
 const handleCategory1 = async (category1Id: number) => {
-  // console.log(category1Id, '---category1Id---');
   attrStore.c1Id = category1Id;
   attrStore.c2Id = '';
   attrStore.c3Id = '';
@@ -68,8 +71,8 @@ const handleDeleteAttr = (index: number) => {
 const handleEdit = (row: AttrInfo) => {
   // 编辑或新增属性
   if (row && row.id) {
-    // 编辑属性
-    Object.assign(attrParams, row);
+    // 编辑属性,row需深拷贝
+    Object.assign(attrParams, JSON.parse(JSON.stringify(row)));
   } else {
     // 新增属性，重设默认数据
     Object.assign(attrParams, {
@@ -79,6 +82,7 @@ const handleEdit = (row: AttrInfo) => {
       attrValueList: [],
     });
   }
+  // 切换页面显示，切换到编辑或新增页面
   visible.value = true;
 };
 const handleAddAttr = () => {
@@ -89,7 +93,10 @@ const handleAddAttr = () => {
     attrId: attrParams.id ? attrParams.id : '',
     flag: true,
   });
-  // visible.value = false;
+  // 获取最后一个新增的属性值，然后输入框聚焦
+  nextTick(() => {
+    inputArr.value[attrParams.attrValueList.length - 1].focus();
+  });
 };
 const handleCancel = () => {
   visible.value = false;
@@ -134,10 +141,13 @@ const handleBlur = (row: AttrValue, index: number) => {
   }
   row.flag = false;
 };
-const handleClick = (row: AttrValue) => {
-  console.log(34343);
+const handleClick = (row: AttrValue, index: number) => {
   //   点击属性值的显示框让其变成可以输入
   row.flag = true;
+  // 属性值输入框聚焦
+  nextTick(() => {
+    inputArr.value[index].focus();
+  });
 };
 </script>
 <template>
@@ -258,11 +268,12 @@ const handleClick = (row: AttrValue) => {
             <template #default="scope">
               <el-input
                 placeholder="请输入属性值名称"
+                :ref="(vc: any) => (inputArr[scope.$index] = vc)"
                 v-model="scope.row.valueName"
                 v-if="scope.row.flag"
                 @blur="() => handleBlur(scope.row, scope.$index)"
               ></el-input>
-              <div v-else @click="() => handleClick(scope.row)">
+              <div v-else @click="() => handleClick(scope.row, scope.$index)">
                 {{ scope.row.valueName }}
               </div>
             </template>
