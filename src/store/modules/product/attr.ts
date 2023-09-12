@@ -4,9 +4,6 @@ import {
   reqCategory1,
   reqCategory2,
   reqCategory3,
-  // reqAttrInfo,
-  // reqSaveAttr,
-  // reqDeleteAttr,
   reqAttrInfoList,
 } from '@/api/product/attr';
 import type { AttrState } from '@/store/modules/types/type';
@@ -51,6 +48,7 @@ const useAttrStore = defineStore('AttrStore', {
       }
     },
     async getAttrInfo() {
+      // 属性管理列表数据请求接口
       this.pending = true;
       const result = await reqAttrInfoList(this.c1Id, this.c2Id, this.c3Id);
       if (result.code === 200) {

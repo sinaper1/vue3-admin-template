@@ -14,8 +14,8 @@ import { TrademarkResponseData, Trademark } from '@/api/product/trademark/type';
 const pending = ref<boolean>(false);
 const currentPage = ref<number>(1);
 const pageSize = ref<number>(10);
-const small = ref<boolean>(false);
-const background = ref<boolean>(true);
+// const small = ref<boolean>(false);
+// const background = ref<boolean>(true);
 const total = ref<number>(0);
 // 表格数据
 const dataSource = ref<Records>([]);
@@ -33,14 +33,12 @@ let trademarkParams = reactive<Trademark>({
   logoUrl: '',
 });
 const handleSizeChange = (val: number) => {
-  // currentPage.value = 1;
-  // pageSize.value = val;
+  pageSize.value = val;
   getHasTrademark();
 };
-// const handleCurrentChange = (val: number) => {
-//   currentPage.value = val;
-//   getHasTrademark();
-// };
+const handleCurrentChange = (val: number) => {
+  getHasTrademark(val);
+};
 // 查询列表数据
 const getHasTrademark = async (pager = 1) => {
   pending.value = true;
@@ -211,16 +209,10 @@ const rules = {
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[5, 10, 20, 50]"
-        :small="small"
-        :background="background"
-        layout="prev, pager, next, jumper, ->, sizes, total"
+      <Pagination
         :total="total"
-        @size-change="handleSizeChange"
-        @current-change="getHasTrademark"
+        @handleSizeChange="handleSizeChange"
+        @handleCurrentChange="handleCurrentChange"
       />
     </div>
   </el-card>

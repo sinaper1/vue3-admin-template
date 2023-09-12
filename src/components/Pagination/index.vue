@@ -1,16 +1,16 @@
+<!--表格分页器-->
 <script setup lang="ts">
 import { ref } from 'vue';
-const currentPage = ref(4);
-const pageSize = ref(10);
-const small = ref(false);
-const background = ref(false);
-const disabled = ref(false);
-const handleSizeChange = (val: number) => {
-  console.log(`${val} items per page`);
-};
-const handleCurrentChange = (val: number) => {
-  console.log(`current page: ${val}`);
-};
+const currentPage = ref<number>(1);
+const pageSize = ref<number>(10);
+defineProps({
+  total: Number,
+  disabled: Boolean,
+  background: Boolean,
+  small: Boolean,
+});
+// 引入父组件传过来的事件
+const emit = defineEmits(['handleSizeChange', 'handleCurrentChange']);
 </script>
 
 <template>
@@ -22,10 +22,10 @@ const handleCurrentChange = (val: number) => {
       :small="small"
       :disabled="disabled"
       :background="background"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="400"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
+      layout="prev, pager, next, jumper, ->, sizes, total"
+      :total="total"
+      @size-change="(val) => emit('handleSizeChange', val)"
+      @current-change="(val) => emit('handleCurrentChange', val)"
     />
   </div>
 </template>

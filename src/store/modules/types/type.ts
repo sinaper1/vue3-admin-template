@@ -1,5 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router';
 import type { CategoryData, AttrInfoData } from '@/api/product/attr/type';
+import type { SpuData } from '@/api/product/spu/type';
 
 export interface UserState {
   token: string | null;
@@ -20,4 +21,9 @@ export interface AttrState {
   c3Id: number | string;
   category3Data: CategoryData;
   AttrInfoData: AttrInfoData;
+}
+
+export interface SpuState {
+  pending: boolean;
+  SpuInfoData: SpuData;
 }
