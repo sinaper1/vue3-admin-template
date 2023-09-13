@@ -15,13 +15,16 @@ export interface SpuObj {
   spuImageList: null;
 }
 
-export type SpuData = SpuObj[];
+export type records = SpuObj[];
 
-export interface SpuResponseData extends ResponseData {
-  data: SpuData;
+export interface SpuData {
+  records: records;
   total: number;
   size: number;
   current: number;
   searchCount: boolean;
   pages: number;
+}
+export interface SpuResponseData extends ResponseData {
+  data: SpuData;
 }

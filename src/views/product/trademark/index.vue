@@ -36,11 +36,9 @@ const handleSizeChange = (val: number) => {
   pageSize.value = val;
   getHasTrademark();
 };
-const handleCurrentChange = (val: number) => {
-  getHasTrademark(val);
-};
 // 查询列表数据
 const getHasTrademark = async (pager = 1) => {
+  console.log(pager, '---pager--');
   pending.value = true;
   currentPage.value = pager;
   let result: TrademarkResponseData = await reqHasTrademark(
@@ -210,9 +208,11 @@ const rules = {
         </el-table-column>
       </el-table>
       <Pagination
+        :currentPage="currentPage"
+        :pageSize="pageSize"
         :total="total"
         @handleSizeChange="handleSizeChange"
-        @handleCurrentChange="handleCurrentChange"
+        @handleCurrentChange="getHasTrademark"
       />
     </div>
   </el-card>

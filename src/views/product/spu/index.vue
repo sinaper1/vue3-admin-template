@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
+import { reqDelSpu } from '@/api/product/spu';
 import useAttrStore from '@/store/modules/product/attr';
 import useSpuStore from '@/store/modules/product/spu';
 const attrStore = useAttrStore();
@@ -10,7 +11,6 @@ const visible = ref<boolean>(false);
 // loading状态
 const pending = ref<boolean>(false);
 const currentPage = ref<number>(1);
-const total = ref<number>(0);
 const pageSize = ref<number>(10);
 onMounted(() => {
   // 重新加载页面需清空原有的数据
@@ -48,15 +48,27 @@ const handleSearch = async () => {
     ElMessage.error('请选择三级分类！');
   }
 };
-const handleEdit = () => {
+const handleEdit = (id: number | string) => {
   visible.value = true;
+  console.log(id);
 };
+const handleDelete = async (id: number | string) => {
+  spuStore.pending = true;
+  const result = await reqDelSpu(id);
+  if (result.code === 200) {
+    await refresh(
+      spuStore.records.length > 1 ? currentPage.value : currentPage.value - 1,
+    );
+    spuStore.pending = false;
+    ElMessage.success('删除属性成功！');
+  } else {
+    ElMessage.error('删除属性失败！');
+  }
+};
+
 const handleSizeChange = (val: number) => {
   pageSize.value = val;
   refresh();
-};
-const handleCurrentChange = (val: number) => {
-  refresh(val);
 };
 
 const refresh = async (pager = 1) => {
@@ -105,21 +117,54 @@ const refresh = async (pager = 1) => {
           border
           v-loading="pending"
           element-loading-text="加载中..."
+          :data="spuStore.records"
         >
           <el-table-column
             label="序号"
             type="index"
             align="center"
           ></el-table-column>
-          <el-table-column label="SPU名称" align="center"></el-table-column>
-          <el-table-column label="SPU描述" align="center"></el-table-column>
-          <el-table-column label="SPU操作" align="center"></el-table-column>
+          <el-table-column
+            label="SPU名称"
+            align="center"
+            prop="spuName"
+          ></el-table-column>
+          <el-table-column
+            label="SPU描述"
+            align="center"
+            prop="description"
+          ></el-table-column>
+          <el-table-column label="SPU操作" align="center">
+            <template #default="scope">
+              <el-button
+                type="primary"
+                icon="Edit"
+                size="small"
+                @click="handleEdit(scope.row)"
+              ></el-button>
+              <el-popconfirm
+                title="确认删除这条数据？"
+                @confirm="handleDelete(scope.row.id)"
+                width="200"
+              >
+                <template #reference>
+                  <el-button
+                    size="small"
+                    type="danger"
+                    icon="Delete"
+                  ></el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
         </el-table>
         <!--分页器-->
         <Pagination
-          :total="total"
+          :currentPage="currentPage"
+          :pageSize="pageSize"
+          :total="spuStore.total"
           @handleSizeChange="handleSizeChange"
-          @handleCurrentChange="handleCurrentChange"
+          @handleCurrentChange="refresh"
         />
       </div>
     </el-card>

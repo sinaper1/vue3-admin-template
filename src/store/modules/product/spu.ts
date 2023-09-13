@@ -2,12 +2,14 @@
 import { defineStore } from 'pinia';
 import { reqGetSpu } from '@/api/product/spu';
 import type { SpuState } from '@/store/modules/types/type';
+import { SpuResponseData } from '@/api/product/spu/type';
 
 const useSpuStore = defineStore('SpuStore', {
   state: (): SpuState => {
     return {
       pending: false,
-      SpuInfoData: [],
+      records: [],
+      total: 0,
     };
   },
   actions: {
@@ -18,8 +20,11 @@ const useSpuStore = defineStore('SpuStore', {
     ) {
       //   SPU列表数据获取
       this.pending = true;
-      const result = await reqGetSpu(page, limit, category3Id);
-      console.log(result, '--result---');
+      const result: SpuResponseData = await reqGetSpu(page, limit, category3Id);
+      if (result.code === 200) {
+        this.records = result.data && result.data.records;
+        this.total = result.data && result.data.total;
+      }
     },
   },
 });
