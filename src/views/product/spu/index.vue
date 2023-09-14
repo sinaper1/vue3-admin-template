@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
+import SpuForm from '@/views/product/spu/spuForm.vue';
+import SkuForm from '@/views/product/spu/skuForm.vue';
 import { reqDelSpu } from '@/api/product/spu';
 import useAttrStore from '@/store/modules/product/attr';
 import useSpuStore from '@/store/modules/product/spu';
 const attrStore = useAttrStore();
 const spuStore = useSpuStore();
-// visible为true现在添加或修改卡片，否则显示table数据卡片
-const visible = ref<boolean>(false);
+const scene = ref<number>(0); //0:显示已有spu,1:添加或修改spu,2:添加sku结构
 // loading状态
 const pending = ref<boolean>(false);
 const currentPage = ref<number>(1);
@@ -20,6 +21,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   // 重置仓库数据
   attrStore.$reset();
+  spuStore.$reset();
 });
 const getCategory1 = async () => {
   await attrStore.useCategory1();
@@ -49,8 +51,18 @@ const handleSearch = async () => {
   }
 };
 const handleEdit = (id: number | string) => {
-  visible.value = true;
+  scene.value = 1;
   console.log(id);
+};
+const handleCancelEdit = () => {
+  scene.value = 0;
+};
+const handleAdd = () => {
+  console.log(1212);
+};
+const handleView = (id: number | string) => {
+  scene.value = 2;
+  console.log(id, '---handleView---');
 };
 const handleDelete = async (id: number | string) => {
   spuStore.pending = true;
@@ -88,7 +100,7 @@ const refresh = async (pager = 1) => {
           :category1Data="attrStore.category1Data"
           :category2Data="attrStore.category2Data"
           :category3Data="attrStore.category3Data"
-          :visible="visible"
+          :visible="scene !== 0"
           @handleCategory1ed="handleCategory1"
           @handleCategory2ed="handleCategory2"
           @handleCategory3ed="handleCategory3"
@@ -96,14 +108,14 @@ const refresh = async (pager = 1) => {
         <el-button
           type="primary"
           @click="handleSearch"
-          :disabled="!attrStore.c3Id || visible"
+          :disabled="!attrStore.c3Id || scene !== 0"
         >
           搜索
         </el-button>
       </div>
     </el-card>
     <el-card style="margin: 10px 0">
-      <div v-show="!visible">
+      <div v-show="scene === 0">
         <el-button
           icon="Plus"
           type="primary"
@@ -133,14 +145,27 @@ const refresh = async (pager = 1) => {
             label="SPU描述"
             align="center"
             prop="description"
+            show-overflow-tooltip
           ></el-table-column>
           <el-table-column label="SPU操作" align="center">
             <template #default="scope">
               <el-button
                 type="primary"
+                icon="Plus"
+                size="small"
+                @click="handleAdd()"
+              ></el-button>
+              <el-button
+                type="primary"
                 icon="Edit"
                 size="small"
-                @click="handleEdit(scope.row)"
+                @click="handleEdit(scope.row.id)"
+              ></el-button>
+              <el-button
+                type="primary"
+                icon="View"
+                size="small"
+                @click="handleView(scope.row.id)"
               ></el-button>
               <el-popconfirm
                 title="确认删除这条数据？"
@@ -167,6 +192,8 @@ const refresh = async (pager = 1) => {
           @handleCurrentChange="refresh"
         />
       </div>
+      <SpuForm v-show="scene === 1" @handleCancel="handleCancelEdit" />
+      <SkuForm v-show="scene === 2" />
     </el-card>
   </div>
 </template>
