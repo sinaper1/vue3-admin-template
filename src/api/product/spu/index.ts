@@ -1,7 +1,10 @@
 // SPU管理模块接口
 import request from '@/utils/request';
 import type { SpuResponseData } from '@/api/product/spu/type';
-import { SaleAttrResponseData, SpuImageResponseData } from "@/api/product/spu/type";
+import {
+  SaleAttrResponseData,
+  SpuImageResponseData,
+} from '@/api/product/spu/type';
 
 enum API {
   GET_SPU_URL = '/admin/product',
