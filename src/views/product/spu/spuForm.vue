@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { UploadProps, UploadUserFile } from 'element-plus';
+// import { reqGetTrademarkList } from '@/api/product/trademark';
 const fileList = ref<UploadUserFile[]>([]);
 const dialogVisible = ref<boolean>(false);
 const dialogImageUrl = ref<string>('');
 
 const emit = defineEmits(['handleCancel']);
+
+onMounted(() => {
+  // reqGetTrademarkList();
+});
+
 const handleRemove: UploadProps['onRemove'] = (uploadFile, uploadFiles) => {
   console.log(uploadFile, uploadFiles);
 };

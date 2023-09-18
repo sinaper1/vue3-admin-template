@@ -6,6 +6,7 @@ import SkuForm from '@/views/product/spu/skuForm.vue';
 import { reqDelSpu } from '@/api/product/spu';
 import useAttrStore from '@/store/modules/product/attr';
 import useSpuStore from '@/store/modules/product/spu';
+import { reqGetTrademarkList } from '@/api/product/trademark';
 const attrStore = useAttrStore();
 const spuStore = useSpuStore();
 const scene = ref<number>(0); //0:显示已有spu,1:添加或修改spu,2:添加sku结构
@@ -17,6 +18,7 @@ onMounted(() => {
   // 重新加载页面需清空原有的数据
   attrStore.AttrInfoData = [];
   getCategory1();
+  reqGetTrademarkList();
 });
 onBeforeUnmount(() => {
   // 重置仓库数据

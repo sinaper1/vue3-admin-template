@@ -24,3 +24,7 @@ export interface TrademarkResponseData extends ResponseData {
     pages: number;
   };
 }
+
+export interface AllTrademark extends ResponseData {
+  data: Records;
+}
