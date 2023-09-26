@@ -9,10 +9,10 @@ export interface SpuObj {
   id?: number;
   spuName: string;
   description: string;
-  category3Id: string;
-  tmId: number;
-  spuSaleAttrList: null;
-  spuImageList: null;
+  category3Id: string | number;
+  tmId: number | string;
+  spuSaleAttrList: null | SaleAttr[];
+  spuImageList: null | SpuImage[];
 }
 
 export type records = SpuObj[];
@@ -31,7 +31,7 @@ export interface SpuResponseData extends ResponseData {
 
 // 商品图片
 export interface SpuImage {
-  id: number;
+  id?: number;
   spuId: number;
   imgName: string;
   imgUrl: string;
@@ -50,7 +50,7 @@ export interface SaleAttrValue {
   baseSaleAttrId: number;
   saleAttrValueName: string;
   saleAttrName: string;
-  // isChecked:
+  isChecked?: string;
 }
 
 // 存储已有的销售属性值的数组类型
@@ -69,3 +69,24 @@ export interface SaleAttr {
 export interface SaleAttrResponseData extends ResponseData {
   data: SaleAttr[];
 }
+
+// 已有的全部SPU的返回数据
+export interface HasSaleAttr {
+  id: number;
+  name: string;
+}
+
+export interface HasSaleAttrResponseData extends ResponseData {
+  data: HasSaleAttr[];
+}
+
+// export interface SaveData {
+//   category3Id: number | string;
+//   description: string;
+//   id?: number;
+//   spuImageList: SpuImage[];
+//   spuName: string;
+//   spuPosterList: SpuImage[];
+//   spuSaleAttrList: SaleAttr[];
+//   tmId: number | string;
+// }

@@ -7,6 +7,7 @@ import { reqDelSpu } from '@/api/product/spu';
 import useAttrStore from '@/store/modules/product/attr';
 import useSpuStore from '@/store/modules/product/spu';
 import { reqGetTrademarkList } from '@/api/product/trademark';
+import type { SpuObj } from '@/api/product/spu/type';
 const attrStore = useAttrStore();
 const spuStore = useSpuStore();
 const scene = ref<number>(0); //0:显示已有spu,1:添加或修改spu,2:添加sku结构
@@ -14,6 +15,8 @@ const scene = ref<number>(0); //0:显示已有spu,1:添加或修改spu,2:添加s
 const pending = ref<boolean>(false);
 const currentPage = ref<number>(1);
 const pageSize = ref<number>(10);
+// 获取子组件实例的spuForm
+let spuRef = ref<any>();
 onMounted(() => {
   // 重新加载页面需清空原有的数据
   attrStore.AttrInfoData = [];
@@ -52,12 +55,34 @@ const handleSearch = async () => {
     ElMessage.error('请选择三级分类！');
   }
 };
-const handleEdit = (id: number | string) => {
+const handleEdit = (row: SpuObj) => {
   scene.value = 1;
-  console.log(id);
+  // 调用子组件的实例方法，获取完整的已有的SPU数据
+  if (row && row.id) {
+    spuRef.value.initHasSpuData(row);
+    // 编辑属性,row需深拷贝
+    // Object.assign(spuParams, JSON.parse(JSON.stringify(row)));
+  }
+  // else {
+  //   // 新增属性，重设默认数据
+  //   Object.assign(spuParams, {
+  //     id: '',
+  //     spuName: '',
+  //     description: '',
+  //     category3Id: '',
+  //     tmId: 0,
+  //     spuSaleAttrList: null,
+  //     spuImageList: null,
+  //   });
+  // }
+  console.log(row);
 };
 const handleCancelEdit = () => {
   scene.value = 0;
+};
+const handleOk = async () => {
+  await refresh();
+  handleCancelEdit();
 };
 const handleAdd = () => {
   console.log(1212);
@@ -161,7 +186,7 @@ const refresh = async (pager = 1) => {
                 type="primary"
                 icon="Edit"
                 size="small"
-                @click="handleEdit(scope.row.id)"
+                @click="handleEdit(scope.row)"
               ></el-button>
               <el-button
                 type="primary"
@@ -194,7 +219,12 @@ const refresh = async (pager = 1) => {
           @handleCurrentChange="refresh"
         />
       </div>
-      <SpuForm v-show="scene === 1" @handleCancel="handleCancelEdit" />
+      <SpuForm
+        ref="spuRef"
+        v-show="scene === 1"
+        @handleCancel="handleCancelEdit"
+        @handleOk="handleOk"
+      />
       <SkuForm v-show="scene === 2" />
     </el-card>
   </div>

@@ -1,19 +1,62 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, reactive, nextTick } from 'vue';
 import type { UploadProps, UploadUserFile } from 'element-plus';
-// import { reqGetTrademarkList } from '@/api/product/trademark';
+import { ElMessage, ElInput } from 'element-plus';
+import { reqGetTrademarkList } from '@/api/product/trademark';
+import {
+  reqAllSaleAttr,
+  reqSpuImageList,
+  reqSpuSaleAttrList,
+  reqAddSpu,
+} from '@/api/product/spu';
+import type { AllTrademark, Records } from '@/api/product/trademark/type';
+import type {
+  SpuObj,
+  HasSaleAttrResponseData,
+  SpuImageResponseData,
+  SaleAttrResponseData,
+  HasSaleAttr,
+  SpuImageData,
+  SaleAttr,
+} from '@/api/product/spu/type';
+// import { spuSaleAttrValueList } from '@/api/product/spu/type';
 const fileList = ref<UploadUserFile[]>([]);
 const dialogVisible = ref<boolean>(false);
 const dialogImageUrl = ref<string>('');
-
-const emit = defineEmits(['handleCancel']);
-
-onMounted(() => {
-  // reqGetTrademarkList();
+const TrademarkData = ref<Records>([]);
+const saleAttr = ref<HasSaleAttr[]>([]);
+const pending = ref<boolean>(false);
+const inputVisible = ref(false);
+const inputValue = ref('');
+const InputRef = ref<InstanceType<typeof ElInput>>();
+// 存储已有的spu对象
+const spuParams = reactive<SpuObj>({
+  spuName: '', //名称
+  description: '', //描述
+  category3Id: '', //三级分类的ID
+  tmId: 0, //品牌ID
+  spuSaleAttrList: null, //销售属性
+  spuImageList: null, //照片墙
 });
+
+const emit = defineEmits(['handleCancel', 'handleOk']);
 
 const handleRemove: UploadProps['onRemove'] = (uploadFile, uploadFiles) => {
   console.log(uploadFile, uploadFiles);
+};
+
+const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
+  const fileTypeArr = ['image/jpeg', 'image/png', 'image/gif'];
+  if (!fileTypeArr.includes(rawFile.type)) {
+    // 如果文件类型不为jpg、png、gif则不能上传
+    ElMessage.error('图片类型必须为jpg、png、gif!');
+    return false;
+  } else if (rawFile.size / 1024 / 1024 > 2) {
+    // 如果文件大于2M则不能上传
+    ElMessage.error('图片大小不能超过2M!');
+    return false;
+  }
+  return true;
 };
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
@@ -21,20 +64,140 @@ const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
   dialogVisible.value = true;
 };
 
-const handleSubmit = () => {
-  console.log('---handleSubmit---');
+const handleSubmit = async () => {
+  console.log(fileList.value, '---fileList---');
+  if (fileList.value && fileList.value.length) {
+    const imgArr: SpuImageData = [];
+    fileList.value.map((v) => {
+      console.log(v, v.response, '---response---');
+      imgArr.push({
+        id: v.id ? v.id : 0,
+        spuId: spuParams.id ? spuParams.id : 0,
+        imgUrl: v.response ? v.response.data : v.url,
+        imgName: v.name,
+      });
+    });
+    spuParams.spuImageList = imgArr;
+    console.log(spuParams, imgArr, '---imgArr---');
+  }
+  const result = await reqAddSpu(spuParams);
+  if (result.code === 200) {
+    if (spuParams.id) {
+      ElMessage.success('修改成功！');
+    } else {
+      ElMessage.success('添加成功！');
+    }
+    emit('handleOk');
+  } else {
+    if (spuParams.id) {
+      ElMessage.error('修改失败！');
+    } else {
+      ElMessage.error('添加失败！');
+    }
+  }
+  console.log(result, '---handleSubmit---');
 };
+
+const handleDelete = (index: number) => {
+  spuParams?.spuSaleAttrList?.splice(index, 1);
+};
+
+const handleClose = (i: number, index: number) => {
+  spuParams?.spuSaleAttrList &&
+    spuParams?.spuSaleAttrList[i]?.spuSaleAttrValueList.splice(index, 1);
+};
+
+const showInput = () => {
+  inputVisible.value = true;
+  nextTick(() => {
+    InputRef.value!.input!.focus();
+  });
+};
+
+const handleInputConfirm = (row: SaleAttr, index: number) => {
+  console.log(row, '---row---');
+  if (inputValue.value) {
+    spuParams?.spuSaleAttrList &&
+      spuParams?.spuSaleAttrList[index]?.spuSaleAttrValueList.push({
+        id: 0,
+        spuId: spuParams.id ? spuParams.id : 0,
+        baseSaleAttrId: row.baseSaleAttrId,
+        saleAttrName: row.saleAttrName,
+        saleAttrValueName: inputValue.value,
+      });
+    // dynamicTags.value.push(inputValue.value);
+  }
+  inputVisible.value = false;
+  inputValue.value = '';
+};
+
+const initHasSpuData = async (row: SpuObj) => {
+  pending.value = true;
+  const data: AllTrademark = await reqGetTrademarkList();
+  if (data.code === 200) {
+    TrademarkData.value = data.data;
+  }
+  const data1: HasSaleAttrResponseData = await reqAllSaleAttr();
+  if (data1.code === 200) {
+    saleAttr.value = data1.data;
+  }
+  if (row.id) {
+    const data2: SpuImageResponseData = await reqSpuImageList(row.id as number);
+    const data3: SaleAttrResponseData = await reqSpuSaleAttrList(
+      row.id as number,
+    );
+    // const fileArr: UploadUserFile[] = [];
+    if (data2 && data2.data && data2.data.length) {
+      data2.data.map((v) => {
+        fileList.value.push({ ...v, name: v.imgName, url: v.imgUrl });
+      });
+    }
+    console.log(fileList, '---data--');
+    // 新增属性，重设默认数据
+    Object.assign(spuParams, {
+      id: row.id,
+      spuName: row.spuName,
+      description: row.description,
+      category3Id: row.category3Id,
+      tmId: row.tmId,
+      spuSaleAttrList: data3.data,
+      spuImageList: null,
+    });
+    console.log(spuParams, row, data, data1, data2, data3, '---1212---');
+  } else {
+    // 新增属性，重设默认数据
+    Object.assign(spuParams, {
+      id: '',
+      spuName: '',
+      description: '',
+      category3Id: '',
+      tmId: 0,
+      spuSaleAttrList: null,
+      spuImageList: null,
+    });
+  }
+  pending.value = false;
+};
+defineExpose({ initHasSpuData });
 </script>
 
 <template>
   <div>
-    <el-form label-width="100px">
+    <el-form label-width="100px" v-loading="pending">
       <el-form-item label="SPU名称">
-        <el-input placeholder="请你输入SPU的名称"></el-input>
+        <el-input
+          placeholder="请你输入SPU的名称"
+          v-model="spuParams.spuName"
+        ></el-input>
       </el-form-item>
-      <el-form-item label="SPu品牌">
-        <el-select>
-          <el-option label="华为"></el-option>
+      <el-form-item label="SPU品牌">
+        <el-select v-model="spuParams.tmId">
+          <el-option
+            v-for="item in TrademarkData"
+            :key="item.id"
+            :label="item.tmName"
+            :value="item.id"
+          ></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="SPU描述">
@@ -42,28 +205,39 @@ const handleSubmit = () => {
           type="textarea"
           placeholder="请你输入SPU的描述"
           :rows="3"
+          v-model="spuParams.description"
         ></el-input>
       </el-form-item>
       <el-form-item label="SPU图标">
         <el-upload
           v-model:file-list="fileList"
-          action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+          action="/api/admin/product/fileUpload"
           list-type="picture-card"
           :on-preview="handlePictureCardPreview"
           :on-remove="handleRemove"
+          :before-upload="beforeUpload"
         >
           <el-icon><Plus /></el-icon>
         </el-upload>
       </el-form-item>
       <el-form-item label="SPU销售属性">
         <el-select>
-          <el-option>测试</el-option>
+          <el-option
+            v-for="item in saleAttr"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          ></el-option>
         </el-select>
         <el-button icon="Plus" type="primary" style="margin-left: 10px">
           添加属性值
         </el-button>
         <!--table展示销售属性与属性值-->
-        <el-table border style="margin: 10px 0">
+        <el-table
+          border
+          style="margin: 10px 0"
+          :data="spuParams.spuSaleAttrList"
+        >
           <el-table-column
             label="序号"
             type="index"
@@ -74,13 +248,55 @@ const handleSubmit = () => {
             label="销售属性名字"
             align="center"
             width="120px"
+            prop="saleAttrName"
           ></el-table-column>
-          <el-table-column label="销售属性值" align="center"></el-table-column>
-          <el-table-column
-            label="操作"
-            align="center"
-            width="120px"
-          ></el-table-column>
+          <el-table-column label="销售属性值" align="center">
+            <template #default="scope">
+              <el-tag
+                v-for="(item, index) in scope.row.spuSaleAttrValueList"
+                :key="item.id"
+                style="margin-right: 10px"
+                closable
+                @close="handleClose(scope.$index, index)"
+              >
+                {{ item.saleAttrValueName }}
+              </el-tag>
+              <el-input
+                v-if="inputVisible"
+                ref="InputRef"
+                v-model="inputValue"
+                class="ml-1 w-20"
+                size="small"
+                @keyup.enter="handleInputConfirm(scope.row, scope.$index)"
+                @blur="handleInputConfirm(scope.row, scope.$index)"
+              />
+              <el-button
+                v-else
+                class="button-new-tag ml-1"
+                size="small"
+                @click="showInput"
+                icon="Plus"
+                type="primary"
+              ></el-button>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" align="center" width="120px">
+            <template #default="scope">
+              <el-popconfirm
+                title="确认删除这条数据？"
+                @confirm="handleDelete(scope.$index)"
+                width="200"
+              >
+                <template #reference>
+                  <el-button
+                    size="small"
+                    type="danger"
+                    icon="Delete"
+                  ></el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
         </el-table>
       </el-form-item>
       <el-form-item>
