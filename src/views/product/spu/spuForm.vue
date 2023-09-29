@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, nextTick } from 'vue';
+import { ref, reactive, nextTick, computed } from 'vue';
 import type { UploadProps, UploadUserFile } from 'element-plus';
 import { ElMessage, ElInput } from 'element-plus';
 import { reqGetTrademarkList } from '@/api/product/trademark';
@@ -131,6 +131,18 @@ const handleInputConfirm = (row: SaleAttr, index: number) => {
   inputValue.value = '';
 };
 
+let unSelectSaleAttr = computed(() => {
+  // 剩下未选的销售属性
+  let unSelectAttr = saleAttr.value.filter((item) => {
+    // 过滤掉全部属性中已有的属性
+    return spuParams?.spuSaleAttrList?.every(
+      // 若属性值name不相等则返回true，相等则返回false
+      (item1) => item.name !== item1.saleAttrName,
+    );
+  });
+  return unSelectAttr;
+});
+
 const initHasSpuData = async (row: SpuObj) => {
   pending.value = true;
   const data: AllTrademark = await reqGetTrademarkList();
@@ -223,7 +235,7 @@ defineExpose({ initHasSpuData });
       <el-form-item label="SPU销售属性">
         <el-select>
           <el-option
-            v-for="item in saleAttr"
+            v-for="(item, index) in unSelectSaleAttr"
             :key="item.id"
             :label="item.name"
             :value="item.id"
