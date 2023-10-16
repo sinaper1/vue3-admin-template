@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, nextTick, computed } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import type { UploadProps, UploadUserFile } from 'element-plus';
 import { ElMessage, ElInput } from 'element-plus';
 import { reqGetTrademarkList } from '@/api/product/trademark';
@@ -26,9 +26,7 @@ const dialogImageUrl = ref<string>('');
 const TrademarkData = ref<Records>([]);
 const saleAttr = ref<HasSaleAttr[]>([]);
 const pending = ref<boolean>(false);
-const inputVisible = ref(false);
-const inputValue = ref('');
-const InputRef = ref<InstanceType<typeof ElInput>>();
+// const InputRef = ref<InstanceType<typeof ElInput>>();
 // 收集还未选择的销售属性的ID与属性值的名字
 const saleAttrIdAndValueName = ref<string>('');
 // 存储已有的spu对象
@@ -67,20 +65,17 @@ const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
 };
 
 const handleSubmit = async () => {
-  console.log(fileList.value, '---fileList---');
   if (fileList.value && fileList.value.length) {
     const imgArr: SpuImageData = [];
-    fileList.value.map((v) => {
-      console.log(v, v.response, '---response---');
+    fileList.value.map((v: any) => {
       imgArr.push({
-        id: v.id ? v.id : 0,
+        id: v.id ? v.id : null,
         spuId: spuParams.id ? spuParams.id : 0,
         imgUrl: v.response ? v.response.data : v.url,
         imgName: v.name,
       });
     });
     spuParams.spuImageList = imgArr;
-    console.log(spuParams, imgArr, '---imgArr---');
   }
   const result = await reqAddSpu(spuParams);
   if (result.code === 200) {
@@ -89,6 +84,7 @@ const handleSubmit = async () => {
     } else {
       ElMessage.success('添加成功！');
     }
+    fileList.value = [];
     emit('handleOk');
   } else {
     if (spuParams.id) {
@@ -97,7 +93,6 @@ const handleSubmit = async () => {
       ElMessage.error('添加失败！');
     }
   }
-  console.log(result, '---handleSubmit---');
 };
 
 const handleDelete = (index: number) => {
@@ -109,28 +104,36 @@ const handleClose = (i: number, index: number) => {
     spuParams?.spuSaleAttrList[i]?.spuSaleAttrValueList.splice(index, 1);
 };
 
-const showInput = () => {
-  inputVisible.value = true;
-  nextTick(() => {
-    InputRef.value!.input!.focus();
-  });
+const showInput = (row: SaleAttr) => {
+  row.flag = true;
+  row.saleAttrValue = '';
+  // nextTick(() => {
+  //   InputRef.value!.input!.focus();
+  // });
 };
 
 const handleInputConfirm = (row: SaleAttr, index: number) => {
-  console.log(row, '---row---');
-  if (inputValue.value) {
+  // 判断属性值是否为空
+  if (row.saleAttrValue?.trim()) {
+    // 判断属性值是否在数组中存在
+    let repeat = row.spuSaleAttrValueList.find((item) => {
+      return item.saleAttrValueName == row.saleAttrValue;
+    });
+    if (repeat) {
+      ElMessage.error('销售属性值重复！');
+      return;
+    }
     spuParams?.spuSaleAttrList &&
       spuParams?.spuSaleAttrList[index]?.spuSaleAttrValueList.push({
-        id: 0,
+        // id: 0,
         spuId: spuParams.id ? spuParams.id : 0,
         baseSaleAttrId: row.baseSaleAttrId,
         saleAttrName: row.saleAttrName,
-        saleAttrValueName: inputValue.value,
+        saleAttrValueName: row.saleAttrValue,
       });
-    // dynamicTags.value.push(inputValue.value);
   }
-  inputVisible.value = false;
-  inputValue.value = '';
+  row.flag = false;
+  row.saleAttrValue = '';
 };
 
 let unSelectSaleAttr = computed(() => {
@@ -172,7 +175,7 @@ const initHasSpuData = async (row: SpuObj) => {
   if (data1.code === 200) {
     saleAttr.value = data1.data;
   }
-  if (row.id) {
+  if (row && row.id) {
     const data2: SpuImageResponseData = await reqSpuImageList(row.id as number);
     const data3: SaleAttrResponseData = await reqSpuSaleAttrList(
       row.id as number,
@@ -183,7 +186,6 @@ const initHasSpuData = async (row: SpuObj) => {
         fileList.value.push({ ...v, name: v.imgName, url: v.imgUrl });
       });
     }
-    console.log(fileList, '---data--');
     // 新增属性，重设默认数据
     Object.assign(spuParams, {
       id: row.id,
@@ -194,16 +196,15 @@ const initHasSpuData = async (row: SpuObj) => {
       spuSaleAttrList: data3.data,
       spuImageList: null,
     });
-    console.log(spuParams, row, data, data1, data2, data3, '---1212---');
   } else {
     // 新增属性，重设默认数据
     Object.assign(spuParams, {
-      id: '',
+      // id: '',
       spuName: '',
       description: '',
       category3Id: '',
-      tmId: 0,
-      spuSaleAttrList: null,
+      tmId: '',
+      spuSaleAttrList: [],
       spuImageList: null,
     });
   }
@@ -261,7 +262,7 @@ defineExpose({ initHasSpuData });
           "
         >
           <el-option
-            v-for="(item, index) in unSelectSaleAttr"
+            v-for="item in unSelectSaleAttr"
             :key="item.id"
             :label="item.name"
             :value="`${item.id}:${item.name}`"
@@ -306,19 +307,18 @@ defineExpose({ initHasSpuData });
                 {{ item.saleAttrValueName }}
               </el-tag>
               <el-input
-                v-if="inputVisible"
-                ref="InputRef"
-                v-model="inputValue"
-                class="ml-1 w-20"
+                v-if="scope.row.flag"
+                v-model="scope.row.saleAttrValue"
                 size="small"
+                style="width: 110px"
+                placeholder="请输入属性值名称"
                 @keyup.enter="handleInputConfirm(scope.row, scope.$index)"
                 @blur="handleInputConfirm(scope.row, scope.$index)"
               />
               <el-button
                 v-else
-                class="button-new-tag ml-1"
                 size="small"
-                @click="showInput"
+                @click="showInput(scope.row)"
                 icon="Plus"
                 type="primary"
               ></el-button>
@@ -344,7 +344,13 @@ defineExpose({ initHasSpuData });
         </el-table>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
+        <el-button
+          type="primary"
+          @click="handleSubmit"
+          :disabled="!spuParams?.spuSaleAttrList?.length > 0"
+        >
+          保存
+        </el-button>
         <el-button @click="emit('handleCancel')">取消</el-button>
       </el-form-item>
     </el-form>
