@@ -29,6 +29,8 @@ const pending = ref<boolean>(false);
 const inputVisible = ref(false);
 const inputValue = ref('');
 const InputRef = ref<InstanceType<typeof ElInput>>();
+// 收集还未选择的销售属性的ID与属性值的名字
+const saleAttrIdAndValueName = ref<string>('');
 // 存储已有的spu对象
 const spuParams = reactive<SpuObj>({
   spuName: '', //名称
@@ -143,6 +145,23 @@ let unSelectSaleAttr = computed(() => {
   return unSelectAttr;
 });
 
+const handleAdd = () => {
+  //   添加属性值
+  if (saleAttrIdAndValueName.value) {
+    let [baseSaleAttrId, saleAttrName] =
+      saleAttrIdAndValueName.value.split(':');
+    spuParams?.spuSaleAttrList?.push({
+      spuId: spuParams.id ? spuParams.id : 0,
+      baseSaleAttrId: Number(baseSaleAttrId),
+      saleAttrName,
+      spuSaleAttrValueList: [],
+    });
+    saleAttrIdAndValueName.value = '';
+  } else {
+    ElMessage.error('请选择SPU销售属性值！');
+  }
+};
+
 const initHasSpuData = async (row: SpuObj) => {
   pending.value = true;
   const data: AllTrademark = await reqGetTrademarkList();
@@ -233,15 +252,28 @@ defineExpose({ initHasSpuData });
         </el-upload>
       </el-form-item>
       <el-form-item label="SPU销售属性">
-        <el-select>
+        <el-select
+          v-model="saleAttrIdAndValueName"
+          :placeholder="
+            unSelectSaleAttr.length
+              ? `还未选择${unSelectSaleAttr.length}个`
+              : '无'
+          "
+        >
           <el-option
             v-for="(item, index) in unSelectSaleAttr"
             :key="item.id"
             :label="item.name"
-            :value="item.id"
+            :value="`${item.id}:${item.name}`"
           ></el-option>
         </el-select>
-        <el-button icon="Plus" type="primary" style="margin-left: 10px">
+        <el-button
+          icon="Plus"
+          type="primary"
+          :disabled="!saleAttrIdAndValueName"
+          style="margin-left: 10px"
+          @click="handleAdd"
+        >
           添加属性值
         </el-button>
         <!--table展示销售属性与属性值-->
@@ -269,7 +301,7 @@ defineExpose({ initHasSpuData });
                 :key="item.id"
                 style="margin-right: 10px"
                 closable
-                @close="handleClose(scope.$index, index)"
+                @close="handleClose(scope.$index, index as number)"
               >
                 {{ item.saleAttrValueName }}
               </el-tag>
