@@ -9,6 +9,7 @@ import {
   reqSpuSaleAttrList,
   reqAddSpu,
 } from '@/api/product/spu';
+import useAttrStore from '@/store/modules/product/attr';
 import type { AllTrademark, Records } from '@/api/product/trademark/type';
 import type {
   SpuObj,
@@ -38,6 +39,8 @@ const spuParams = reactive<SpuObj>({
   spuSaleAttrList: null, //销售属性
   spuImageList: null, //照片墙
 });
+
+const attrStore = useAttrStore();
 
 const emit = defineEmits(['handleCancel', 'handleOk']);
 
@@ -85,7 +88,7 @@ const handleSubmit = async () => {
       ElMessage.success('添加成功！');
     }
     fileList.value = [];
-    emit('handleOk');
+    emit('handleOk', { update: !!spuParams.id });
   } else {
     if (spuParams.id) {
       ElMessage.error('修改失败！');
@@ -93,6 +96,12 @@ const handleSubmit = async () => {
       ElMessage.error('添加失败！');
     }
   }
+};
+
+const onCancel = () => {
+  // 清空照片墙
+  fileList.value = [];
+  emit('handleCancel');
 };
 
 const handleDelete = (index: number) => {
@@ -107,9 +116,6 @@ const handleClose = (i: number, index: number) => {
 const showInput = (row: SaleAttr) => {
   row.flag = true;
   row.saleAttrValue = '';
-  // nextTick(() => {
-  //   InputRef.value!.input!.focus();
-  // });
 };
 
 const handleInputConfirm = (row: SaleAttr, index: number) => {
@@ -202,7 +208,7 @@ const initHasSpuData = async (row: SpuObj) => {
       // id: '',
       spuName: '',
       description: '',
-      category3Id: '',
+      category3Id: attrStore.c3Id,
       tmId: '',
       spuSaleAttrList: [],
       spuImageList: null,
@@ -351,11 +357,11 @@ defineExpose({ initHasSpuData });
         >
           保存
         </el-button>
-        <el-button @click="emit('handleCancel')">取消</el-button>
+        <el-button @click="onCancel">取消</el-button>
       </el-form-item>
     </el-form>
     <el-dialog v-model="dialogVisible">
-      <img w-full :src="dialogImageUrl" alt="Preview Image" />
+      <el-image fit="fill" :src="dialogImageUrl" alt="Preview Image" />
     </el-dialog>
   </div>
 </template>

@@ -58,30 +58,15 @@ const handleSearch = async () => {
 const handleEdit = (row: SpuObj) => {
   scene.value = 1;
   // 调用子组件的实例方法，获取完整的已有的SPU数据
-  // if (row && row.id) {
   spuRef.value.initHasSpuData(row);
-  // 编辑属性,row需深拷贝
-  // Object.assign(spuParams, JSON.parse(JSON.stringify(row)));
-  // }
-  // else {
-  //   // 新增属性，重设默认数据
-  //   Object.assign(spuParams, {
-  //     id: '',
-  //     spuName: '',
-  //     description: '',
-  //     category3Id: '',
-  //     tmId: 0,
-  //     spuSaleAttrList: null,
-  //     spuImageList: null,
-  //   });
-  // }
-  console.log(row);
 };
 const handleCancelEdit = () => {
   scene.value = 0;
 };
-const handleOk = async () => {
-  await refresh();
+const handleOk = async (obj: any) => {
+  // update:判断是否是编辑，编辑则保留在当前页，添加则返回第一页
+  const { update } = obj;
+  await refresh(update ? currentPage.value : 1);
   handleCancelEdit();
 };
 const handleAdd = () => {
