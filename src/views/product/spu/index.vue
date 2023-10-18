@@ -17,6 +17,8 @@ const currentPage = ref<number>(1);
 const pageSize = ref<number>(10);
 // 获取子组件实例的spuForm
 let spuRef = ref<any>();
+// 获取组件实例的skuForm
+let skuRef = ref<any>();
 onMounted(() => {
   // 重新加载页面需清空原有的数据
   attrStore.AttrInfoData = [];
@@ -69,8 +71,10 @@ const handleOk = async (obj: any) => {
   await refresh(update ? currentPage.value : 1);
   handleCancelEdit();
 };
-const handleAdd = () => {
-  console.log(1212);
+const handleAdd = (row: SpuObj) => {
+  // 添加SKU，切换为场景2
+  scene.value = 2;
+  skuRef.value.initHasSkuData(row);
 };
 const handleView = (id: number | string) => {
   scene.value = 2;
@@ -165,19 +169,22 @@ const refresh = async (pager = 1) => {
                 type="primary"
                 icon="Plus"
                 size="small"
-                @click="handleAdd()"
+                @click="handleAdd(scope.row)"
+                title="添加SKU"
               ></el-button>
               <el-button
                 type="primary"
                 icon="Edit"
                 size="small"
                 @click="handleEdit(scope.row)"
+                title="修改SPU"
               ></el-button>
               <el-button
                 type="primary"
                 icon="View"
                 size="small"
                 @click="handleView(scope.row.id)"
+                title="查看SPU列表"
               ></el-button>
               <el-popconfirm
                 title="确认删除这条数据？"
@@ -189,6 +196,7 @@ const refresh = async (pager = 1) => {
                     size="small"
                     type="danger"
                     icon="Delete"
+                    title="删除SPU"
                   ></el-button>
                 </template>
               </el-popconfirm>
@@ -210,7 +218,12 @@ const refresh = async (pager = 1) => {
         @handleCancel="handleCancelEdit"
         @handleOk="handleOk"
       />
-      <SkuForm v-show="scene === 2" />
+      <SkuForm
+        ref="skuRef"
+        v-show="scene === 2"
+        @handleCancel="handleCancelEdit"
+        @handleOk="handleOk"
+      />
     </el-card>
   </div>
 </template>

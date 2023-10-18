@@ -67,9 +67,11 @@ export interface SaleAttr {
   saleAttrValue?: string;
 }
 
+export type spuSaleAttrList = SaleAttr[];
+
 // SPU已有的销售属性接口返回数据的ts类型
 export interface SaleAttrResponseData extends ResponseData {
-  data: SaleAttr[];
+  data: spuSaleAttrList;
 }
 
 // 已有的全部SPU的返回数据
