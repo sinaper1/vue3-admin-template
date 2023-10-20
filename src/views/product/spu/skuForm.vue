@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive, ref } from "vue";
 import useAttrStore from '@/store/modules/product/attr';
 import {
   SaleAttrResponseData,
@@ -16,6 +16,12 @@ const emit = defineEmits(['handleCancel', 'handleOk']);
 
 const spuSaleAttr = ref<spuSaleAttrList>([]);
 const fileList = ref<SpuImageData>([]);
+const params = reactive({
+  skuName: '',
+  price: null,
+  weight: null,
+  skuDesc: null,
+});
 const onCancel = () => {
   // 清空照片
   fileList.value = [];
@@ -46,19 +52,28 @@ defineExpose({ initHasSkuData });
   <div>
     <el-form label-width="100px">
       <el-form-item label="SKU名称">
-        <el-input placeholder="SKU名称"></el-input>
+        <el-input placeholder="SKU名称" v-model="params.skuName"></el-input>
       </el-form-item>
       <el-form-item label="价格(元)">
-        <el-input placeholder="价格(元)" type="number"></el-input>
+        <el-input
+          placeholder="价格(元)"
+          type="number"
+          v-model="params.price"
+        ></el-input>
       </el-form-item>
       <el-form-item label="重量(克)">
-        <el-input placeholder="重量(克)" type="number"></el-input>
+        <el-input
+          placeholder="重量(克)"
+          type="number"
+          v-model="params.weight"
+        ></el-input>
       </el-form-item>
       <el-form-item label="SKU描述">
         <el-input
           placeholder="SKU描述"
           type="textarea"
           :autosize="{ minRows: 2, maxRows: 4 }"
+          v-model="params.skuDesc"
         ></el-input>
       </el-form-item>
       <el-form-item label="平台属性">
