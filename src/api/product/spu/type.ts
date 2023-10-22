@@ -94,3 +94,34 @@ export interface HasSaleAttrResponseData extends ResponseData {
 //   spuSaleAttrList: SaleAttr[];
 //   tmId: number | string;
 // }
+
+export interface skuAttrValue {
+  attrId: number; //平台属性id
+  valueId: number; //平台属性值id
+}
+
+export interface skuSaleAttrValue {
+  saleAttrId: number; //属性id
+  saleAttrValueId: number; //属性值id
+}
+
+export interface skuImage {
+  imgUrl: string;
+  imgName: string;
+  isDefault: string;
+}
+
+export interface SkuObj {
+  category3Id: string | number;
+  spuId?: string | number;
+  tmId: string | number;
+  id?: number;
+  skuName: string;
+  price?: string | number;
+  weight?: string | number;
+  skuDesc?: string;
+  skuDefaultImg: string;
+  skuAttrValueList?: skuAttrValue[];
+  skuSaleAttrValueList?: skuSaleAttrValue[];
+  skuImageList: skuImage[];
+}

@@ -1,11 +1,12 @@
 // SPU管理模块接口
 import request from '@/utils/request';
-import type { SpuResponseData } from '@/api/product/spu/type';
 import type {
   HasSaleAttrResponseData,
   SaleAttrResponseData,
   SpuObj,
   SpuImageResponseData,
+  SpuResponseData,
+  SkuObj,
 } from '@/api/product/spu/type';
 
 enum API {
@@ -22,6 +23,10 @@ enum API {
   BASE_SALE_ATTR_LIST_URL = '/admin/product/spuSaleAttrList',
   //   获取整个项目全部的销售属性[颜色/版本/尺码]
   SALE_ATTR_LIST_URL = '/admin/product/baseSaleAttrList',
+  //   新增sku
+  SAVE_SKU_URL = '/admin/product/saveSkuInfo',
+  // 更新sku
+  UPDATE_SKU_URL = '/admin/product/updateSkuInfo',
 }
 
 export const reqGetSpu = (
@@ -52,5 +57,12 @@ export const reqAddSpu = (data: SpuObj) => {
     return request.post<any, any>(API.UPDATE_SPU_URL, data);
   } else {
     return request.post<any, any>(API.SAVE_SPU_URL, data);
+  }
+};
+export const reqAddSku = (data: SkuObj) => {
+  if (data.id) {
+    return request.post<any, any>(API.UPDATE_SKU_URL, data);
+  } else {
+    return request.post<any, any>(API.SAVE_SKU_URL, data);
   }
 };

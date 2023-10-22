@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue';
 import useAttrStore from '@/store/modules/product/attr';
 import {
   SaleAttrResponseData,
+  SkuObj,
   SpuImageData,
   SpuImageResponseData,
   SpuObj,
@@ -13,14 +14,22 @@ import { reqSpuImageList, reqSpuSaleAttrList } from '@/api/product/spu';
 const attrStore = useAttrStore();
 
 const emit = defineEmits(['handleCancel', 'handleOk']);
-
+// 销售属性
 const spuSaleAttr = ref<spuSaleAttrList>([]);
+// 图片数据
 const fileList = ref<SpuImageData>([]);
-const params = reactive({
+const params = reactive<SkuObj>({
   skuName: '',
-  price: null,
-  weight: null,
-  skuDesc: null,
+  price: '',
+  weight: '',
+  skuDesc: '',
+  skuAttrValueList: [],
+  skuSaleAttrValueList: [],
+  skuImageList: [],
+  tmId: '',
+  category3Id: '',
+  spuId: '',
+  skuDefaultImg: '',
 });
 const onCancel = () => {
   // 清空照片
@@ -33,6 +42,8 @@ const initHasSkuData = async (row: SpuObj) => {
   if (attrStore.c3Id) {
     // 获取平台属性数据
     await attrStore.getAttrInfo();
+    params.category3Id = attrStore.c3Id;
+    params.spuId = row.id;
   }
   if (row && row.id) {
     // 获取销售属性数据
@@ -126,8 +137,10 @@ defineExpose({ initHasSkuData });
           </el-table-column>
           <el-table-column label="名称" align="center" prop="imgName" />
           <el-table-column label="操作" align="center">
-            <el-button type="primary">设为默认图片</el-button>
-            <el-button type="success">默认图片</el-button>
+            <template #="{ row, $index }">
+              <el-button type="primary">设为默认图片</el-button>
+              <el-button type="success">默认图片</el-button>
+            </template>
           </el-table-column>
         </el-table>
       </el-form-item>
