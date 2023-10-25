@@ -161,11 +161,7 @@ const rules = {
       <el-button type="primary" icon="Plus" @click="handleAdd">
         添加品牌
       </el-button>
-      <el-table
-        :data="dataSource"
-        style="margin: 10px 0"
-        border
-      >
+      <el-table :data="dataSource" style="margin: 10px 0" border>
         <el-table-column label="序号" width="80" align="center" type="index" />
         <el-table-column label="品牌名称" align="center" prop="tmName" />
         <el-table-column label="品牌LOGO" align="center">
