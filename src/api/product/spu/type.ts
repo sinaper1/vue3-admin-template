@@ -65,6 +65,7 @@ export interface SaleAttr {
   spuSaleAttrValueList: spuSaleAttrValueList;
   flag?: boolean;
   saleAttrValue?: string;
+  saleIdAndValueId?: string;
 }
 
 export type spuSaleAttrList = SaleAttr[];
@@ -101,8 +102,8 @@ export interface skuAttrValue {
 }
 
 export interface skuSaleAttrValue {
-  saleAttrId: number; //属性id
-  saleAttrValueId: number; //属性值id
+  saleAttrId: number; //销售属性id
+  saleAttrValueId: number; //销售属性值id
 }
 
 export interface skuImage {

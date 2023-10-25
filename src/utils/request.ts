@@ -2,6 +2,8 @@
 import axios from 'axios';
 import { ElMessage } from 'element-plus';
 import useUserStore from '@/store/modules/user';
+import { startLoadingAddCount, endLoadingSubCount } from '@/utils/loading';
+
 //创建axios实例
 const request = axios.create({
   //    基础路径
@@ -11,20 +13,32 @@ const request = axios.create({
 });
 
 //请求拦截器
-request.interceptors.request.use((config) => {
-  // 获取仓库token
-  const userStore = useUserStore();
-  if (userStore.token) {
-    config.headers.token = userStore.token;
-  }
-  //config配置对象，headers属性请求头，给服务器携带公共参数
-  //返回配置对象
-  return config;
-});
+request.interceptors.request.use(
+  (config) => {
+    // 获取仓库token
+    const userStore = useUserStore();
+    if (userStore.token) {
+      config.headers.token = userStore.token;
+    }
+    // 开始loading
+    startLoadingAddCount();
+    //config配置对象，headers属性请求头，给服务器携带公共参数
+    //返回配置对象
+    return config;
+  },
+  (error) => {
+    console.log(error);
+    // 结束loading
+    endLoadingSubCount();
+    return Promise.reject(error);
+  },
+);
 
 //响应拦截器
 request.interceptors.response.use(
   (response) => {
+    // 结束loading
+    endLoadingSubCount();
     return response.data;
   },
   (error) => {
@@ -48,6 +62,8 @@ request.interceptors.response.use(
         message = '网络出现问题';
         break;
     }
+    // 结束loading
+    endLoadingSubCount();
     //    提示错误信息
     ElMessage({
       type: 'error',

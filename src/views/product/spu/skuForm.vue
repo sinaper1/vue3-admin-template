@@ -4,12 +4,18 @@ import useAttrStore from '@/store/modules/product/attr';
 import {
   SaleAttrResponseData,
   SkuObj,
+  SpuImage,
   SpuImageData,
   SpuImageResponseData,
   SpuObj,
   spuSaleAttrList,
 } from '@/api/product/spu/type';
-import { reqSpuImageList, reqSpuSaleAttrList } from '@/api/product/spu';
+import {
+  reqSpuImageList,
+  reqSpuSaleAttrList,
+  reqAddSku,
+} from '@/api/product/spu';
+import { ElMessage } from 'element-plus';
 
 const attrStore = useAttrStore();
 
@@ -18,7 +24,9 @@ const emit = defineEmits(['handleCancel', 'handleOk']);
 const spuSaleAttr = ref<spuSaleAttrList>([]);
 // 图片数据
 const fileList = ref<SpuImageData>([]);
-const params = reactive<SkuObj>({
+// 获取table组件实例
+const table = ref<any>();
+const initData: SkuObj = {
   skuName: '',
   price: '',
   weight: '',
@@ -30,13 +38,49 @@ const params = reactive<SkuObj>({
   category3Id: '',
   spuId: '',
   skuDefaultImg: '',
+};
+let params = reactive<SkuObj>({
+  ...initData,
 });
 const onCancel = () => {
   // 清空照片
   fileList.value = [];
   // 清空销售属性
   spuSaleAttr.value = [];
+  // 重置params
+  Object.assign(params, initData);
   emit('handleCancel');
+};
+const onSave = async () => {
+  let attrArr = attrStore.AttrInfoData.reduce((prev: any, next: any) => {
+    if (next.attrIdAndValueId) {
+      let [attrId, valueId] = next.attrIdAndValueId.split(':');
+      prev.push({ attrId, valueId });
+    }
+    return prev;
+  }, []);
+  params.skuAttrValueList = attrArr;
+  let saleAttrArr = spuSaleAttr.value.reduce((prev: any, next: any) => {
+    if (next.saleIdAndValueId) {
+      let [saleAttrId, saleAttrValueId] = next.saleIdAndValueId.split(':');
+      prev.push({ saleAttrId, saleAttrValueId });
+    }
+    return prev;
+  }, []);
+  params.skuSaleAttrValueList = saleAttrArr;
+  const data = await reqAddSku(params);
+  if (data.code === 200) {
+    ElMessage.success('添加SKU成功！');
+    onCancel();
+  } else {
+    ElMessage.error('添加SKU失败！');
+  }
+};
+const handleDefault = (row: SpuImage) => {
+  params.skuDefaultImg = row.imgUrl;
+  // 清空全部选择
+  table.value.clearSelection();
+  table.value.toggleRowSelection(row, true);
 };
 const initHasSkuData = async (row: SpuObj) => {
   if (attrStore.c3Id) {
@@ -54,7 +98,6 @@ const initHasSkuData = async (row: SpuObj) => {
     spuSaleAttr.value = data.data;
     fileList.value = data2.data;
   }
-  console.log(row, '---row---');
 };
 defineExpose({ initHasSkuData });
 </script>
@@ -94,12 +137,12 @@ defineExpose({ initHasSkuData });
             :key="item.id"
             :label="item.attrName"
           >
-            <el-select>
+            <el-select v-model="item.attrIdAndValueId">
               <el-option
                 v-for="v in item.attrValueList"
                 :key="v.id"
                 :label="v.valueName"
-                :value="v.id"
+                :value="`${item.id}:${v.id}`"
               ></el-option>
             </el-select>
           </el-form-item>
@@ -112,19 +155,19 @@ defineExpose({ initHasSkuData });
             :key="item.id"
             :label="item.saleAttrName"
           >
-            <el-select>
+            <el-select v-model="item.saleIdAndValueId">
               <el-option
                 v-for="v in item.spuSaleAttrValueList"
                 :key="v.id"
                 :label="v.saleAttrValueName"
-                :value="v.id"
+                :value="`${item.id}:${v.id}`"
               ></el-option>
             </el-select>
           </el-form-item>
         </el-form>
       </el-form-item>
       <el-form-item label="图片名称">
-        <el-table border :data="fileList">
+        <el-table border :data="fileList" ref="table">
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column label="图片" align="center">
             <template #default="scope">
@@ -138,14 +181,16 @@ defineExpose({ initHasSkuData });
           <el-table-column label="名称" align="center" prop="imgName" />
           <el-table-column label="操作" align="center">
             <template #="{ row, $index }">
-              <el-button type="primary">设为默认图片</el-button>
+              <el-button type="primary" @click="handleDefault(row)">
+                设为默认图片
+              </el-button>
               <el-button type="success">默认图片</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary">保存</el-button>
+        <el-button type="primary" @click="onSave">保存</el-button>
         <el-button @click="onCancel">取消</el-button>
       </el-form-item>
     </el-form>

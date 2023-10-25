@@ -12,7 +12,6 @@ import type { CategoryResponseData } from '@/api/product/attr/type';
 const useAttrStore = defineStore('AttrStore', {
   state: (): AttrState => {
     return {
-      pending: false,
       c1Id: '',
       category1Data: [],
       c2Id: '',
@@ -49,13 +48,10 @@ const useAttrStore = defineStore('AttrStore', {
     },
     async getAttrInfo() {
       // 属性管理列表数据请求接口
-      this.pending = true;
       const result = await reqAttrInfoList(this.c1Id, this.c2Id, this.c3Id);
       if (result.code === 200) {
         this.AttrInfoData = result.data;
-        this.pending = false;
       } else {
-        this.pending = false;
         return Promise.reject(new Error(result.message));
       }
     },

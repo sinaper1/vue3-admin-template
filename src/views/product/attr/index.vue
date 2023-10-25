@@ -54,11 +54,9 @@ const handleSearch = async () => {
 };
 const handleDelete = async (id: number) => {
   // 删除属性
-  attrStore.pending = true;
   const result = await reqDeleteAttr(id);
   if (result.code === 200) {
     await handleSearch();
-    attrStore.pending = false;
     ElMessage.success('删除属性成功！');
   } else {
     ElMessage.error('删除属性失败！');
@@ -183,13 +181,7 @@ const handleClick = (row: AttrValue, index: number) => {
         >
           添加属性
         </el-button>
-        <el-table
-          border
-          style="margin: 10px 0"
-          :data="attrStore.AttrInfoData"
-          v-loading="attrStore.pending"
-          element-loading-text="加载中..."
-        >
+        <el-table border style="margin: 10px 0" :data="attrStore.AttrInfoData">
           <el-table-column
             label="序号"
             type="index"

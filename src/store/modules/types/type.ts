@@ -13,7 +13,6 @@ export interface UserState {
 }
 
 export interface AttrState {
-  pending: boolean;
   c1Id: number | string;
   category1Data: CategoryData;
   c2Id: number | string;
@@ -24,7 +23,6 @@ export interface AttrState {
 }
 
 export interface SpuState {
-  pending: boolean;
   records: records;
   total: number;
 }

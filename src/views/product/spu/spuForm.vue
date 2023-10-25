@@ -26,7 +26,6 @@ const dialogVisible = ref<boolean>(false);
 const dialogImageUrl = ref<string>('');
 const TrademarkData = ref<Records>([]);
 const saleAttr = ref<HasSaleAttr[]>([]);
-const pending = ref<boolean>(false);
 // const InputRef = ref<InstanceType<typeof ElInput>>();
 // 收集还未选择的销售属性的ID与属性值的名字
 const saleAttrIdAndValueName = ref<string>('');
@@ -172,7 +171,6 @@ const handleAdd = () => {
 };
 
 const initHasSpuData = async (row: SpuObj) => {
-  pending.value = true;
   const data: AllTrademark = await reqGetTrademarkList();
   if (data.code === 200) {
     TrademarkData.value = data.data;
@@ -214,14 +212,13 @@ const initHasSpuData = async (row: SpuObj) => {
       spuImageList: null,
     });
   }
-  pending.value = false;
 };
 defineExpose({ initHasSpuData });
 </script>
 
 <template>
   <div>
-    <el-form label-width="100px" v-loading="pending">
+    <el-form label-width="100px">
       <el-form-item label="SPU名称">
         <el-input
           placeholder="请你输入SPU的名称"

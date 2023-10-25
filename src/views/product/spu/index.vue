@@ -11,8 +11,6 @@ import type { SpuObj } from '@/api/product/spu/type';
 const attrStore = useAttrStore();
 const spuStore = useSpuStore();
 const scene = ref<number>(0); //0:显示已有spu,1:添加或修改spu,2:添加sku结构
-// loading状态
-const pending = ref<boolean>(false);
 const currentPage = ref<number>(1);
 const pageSize = ref<number>(10);
 // 获取子组件实例的spuForm
@@ -81,13 +79,11 @@ const handleView = (id: number | string) => {
   console.log(id, '---handleView---');
 };
 const handleDelete = async (id: number | string) => {
-  spuStore.pending = true;
   const result = await reqDelSpu(id);
   if (result.code === 200) {
     await refresh(
       spuStore.records.length > 1 ? currentPage.value : currentPage.value - 1,
     );
-    spuStore.pending = false;
     ElMessage.success('删除属性成功！');
   } else {
     ElMessage.error('删除属性失败！');
@@ -100,10 +96,8 @@ const handleSizeChange = (val: number) => {
 };
 
 const refresh = async (pager = 1) => {
-  pending.value = true;
   currentPage.value = pager;
   await spuStore.getSpuData(currentPage.value, pageSize.value, attrStore.c3Id);
-  pending.value = false;
 };
 </script>
 
@@ -140,13 +134,7 @@ const refresh = async (pager = 1) => {
         >
           添加SPU
         </el-button>
-        <el-table
-          style="margin: 10px 0"
-          border
-          v-loading="pending"
-          element-loading-text="加载中..."
-          :data="spuStore.records"
-        >
+        <el-table style="margin: 10px 0" border :data="spuStore.records">
           <el-table-column
             label="序号"
             type="index"
