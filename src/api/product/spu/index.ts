@@ -7,6 +7,7 @@ import type {
   SpuImageResponseData,
   SpuResponseData,
   SkuObj,
+  SkuInfoData,
 } from '@/api/product/spu/type';
 
 enum API {
@@ -27,6 +28,8 @@ enum API {
   SAVE_SKU_URL = '/admin/product/saveSkuInfo',
   // 更新sku
   UPDATE_SKU_URL = '/admin/product/updateSkuInfo',
+  //   查看某一个已有的SPU下售卖的商品
+  SKU_INFO_URL = '/admin/product/findBySpuId',
 }
 
 export const reqGetSpu = (
@@ -65,4 +68,8 @@ export const reqAddSku = (data: SkuObj) => {
   } else {
     return request.post<any, any>(API.SAVE_SKU_URL, data);
   }
+};
+
+export const reqGetSkuInfo = (spuId: number | string) => {
+  return request.get<any, SkuInfoData>(`${API.SKU_INFO_URL}/${spuId}`);
 };

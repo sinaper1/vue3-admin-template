@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import SpuForm from '@/views/product/spu/spuForm.vue';
 import SkuForm from '@/views/product/spu/skuForm.vue';
-import { reqDelSpu } from '@/api/product/spu';
+import { reqDelSpu, reqGetSkuInfo } from '@/api/product/spu';
 import useAttrStore from '@/store/modules/product/attr';
 import useSpuStore from '@/store/modules/product/spu';
 import { reqGetTrademarkList } from '@/api/product/trademark';
-import type { SpuObj } from '@/api/product/spu/type';
+import type { SpuObj, SkuInfoData, SkuObjList } from '@/api/product/spu/type';
 const attrStore = useAttrStore();
 const spuStore = useSpuStore();
 const scene = ref<number>(0); //0:显示已有spu,1:添加或修改spu,2:添加sku结构
 const currentPage = ref<number>(1);
 const pageSize = ref<number>(10);
+let skuInfo = ref<SkuObjList>([]);
+const dialogVisible = ref<boolean>(false);
 // 获取子组件实例的spuForm
 let spuRef = ref<any>();
 // 获取组件实例的skuForm
@@ -74,9 +76,13 @@ const handleAdd = (row: SpuObj) => {
   scene.value = 2;
   skuRef.value.initHasSkuData(row);
 };
-const handleView = (id: number | string) => {
-  scene.value = 2;
-  console.log(id, '---handleView---');
+// 查看SPU列表
+const handleView = async (id: number | string) => {
+  const data: SkuInfoData = await reqGetSkuInfo(id);
+  if (data.code === 200) {
+    skuInfo.value = [...data.data];
+    dialogVisible.value = true;
+  }
 };
 const handleDelete = async (id: number | string) => {
   const result = await reqDelSpu(id);
@@ -98,6 +104,10 @@ const handleSizeChange = (val: number) => {
 const refresh = async (pager = 1) => {
   currentPage.value = pager;
   await spuStore.getSpuData(currentPage.value, pageSize.value, attrStore.c3Id);
+};
+
+const handleClose = () => {
+  dialogVisible.value = false;
 };
 </script>
 
@@ -212,6 +222,38 @@ const refresh = async (pager = 1) => {
         @handleCancel="handleCancelEdit"
         @handleOk="handleOk"
       />
+      <!--SPU列表数据-->
+      <el-dialog
+        v-model="dialogVisible"
+        title="SKU列表"
+        width="30%"
+        :before-close="handleClose"
+      >
+        <el-table border :data="skuInfo">
+          <el-table-column label="sku名字" align="center" prop="skuName" />
+          <el-table-column
+            label="sku价格"
+            width="100"
+            align="center"
+            prop="price"
+          />
+          <el-table-column
+            label="sku重量"
+            width="100"
+            align="center"
+            prop="weight"
+          />
+          <el-table-column label="sku图片" align="center" width="100">
+            <template #default="scope">
+              <el-image
+                fit="fill"
+                :src="scope.row.skuDefaultImg"
+                :alt="scope.row.skuName"
+              ></el-image>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-dialog>
     </el-card>
   </div>
 </template>

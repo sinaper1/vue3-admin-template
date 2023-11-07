@@ -184,7 +184,6 @@ defineExpose({ initHasSkuData });
               <el-button type="primary" @click="handleDefault(row)">
                 设为默认图片
               </el-button>
-              <el-button type="success">默认图片</el-button>
             </template>
           </el-table-column>
         </el-table>

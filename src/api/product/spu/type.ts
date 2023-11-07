@@ -125,4 +125,11 @@ export interface SkuObj {
   skuAttrValueList?: skuAttrValue[];
   skuSaleAttrValueList?: skuSaleAttrValue[];
   skuImageList: skuImage[];
+  isSale?: number;
+}
+
+export type SkuObjList = SkuObj[];
+
+export interface SkuInfoData extends ResponseData {
+  data: SkuObjList;
 }
