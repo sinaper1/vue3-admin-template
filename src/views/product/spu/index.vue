@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import SpuForm from '@/views/product/spu/spuForm.vue';
 import SkuForm from '@/views/product/spu/skuForm.vue';
@@ -90,9 +90,9 @@ const handleDelete = async (id: number | string) => {
     await refresh(
       spuStore.records.length > 1 ? currentPage.value : currentPage.value - 1,
     );
-    ElMessage.success('删除属性成功！');
+    ElMessage.success('删除成功！');
   } else {
-    ElMessage.error('删除属性失败！');
+    ElMessage.error('删除失败！');
   }
 };
 
