@@ -45,9 +45,25 @@
         ></el-table-column>
         <el-table-column label="操作" width="250" align="center" fixed="right">
           <template #="{ row, index }">
-            <el-button type="info" size="small" icon="Top"></el-button>
-            <el-button type="primary" size="small" icon="Edit"></el-button>
-            <el-button type="info" size="small" icon="InfoFilled"></el-button>
+            <el-button
+              :type="row.isSale === 0 ? 'success' : 'info'"
+              size="small"
+              :icon="row.isSale === 0 ? 'Top' : 'Bottom'"
+              :title="row.isSale === 0 ? '上架SKU' : '下架SKU'"
+              @click="handleSkuSale(row)"
+            ></el-button>
+            <el-button
+              type="primary"
+              size="small"
+              icon="Edit"
+              title="编辑SKU"
+            ></el-button>
+            <el-button
+              type="info"
+              size="small"
+              icon="InfoFilled"
+              title="SKU详情"
+            ></el-button>
             <el-popconfirm
               title="确认删除这条数据？"
               @confirm="handleDelete(row.id)"
@@ -79,9 +95,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { reqDeleteSku, reqGetSku } from '@/api/product/sku';
+import {
+  reqCancelSaleSku,
+  reqDeleteSku,
+  reqGetSku,
+  reqOnSaleSku,
+} from '@/api/product/sku';
 import { records, SkuResponseData } from '@/api/product/sku/type';
 import { ElMessage } from 'element-plus';
+import type { SkuObj } from '@/api/product/spu/type';
 
 const currentPage = ref<number>(1);
 const pageSize = ref<number>(10);
@@ -116,6 +138,28 @@ const handleDelete = async (id: number | string) => {
     ElMessage.success('删除成功！');
   } else {
     ElMessage.error('删除失败！');
+  }
+};
+
+const handleSkuSale = async (data: SkuObj) => {
+  // 商品上架与下架
+  // isSale：1：商品已上架；0：商品已下架
+  if (data.isSale) {
+    const res = await reqCancelSaleSku(data.id);
+    if (res.code === 200) {
+      ElMessage.success('商品下架成功！');
+      await refresh();
+    } else {
+      ElMessage.success('商品下架失败！');
+    }
+  } else {
+    const res = await reqOnSaleSku(data.id);
+    if (res.code === 200) {
+      ElMessage.success('商品上架成功！');
+      await refresh();
+    } else {
+      ElMessage.success('商品上架失败！');
+    }
   }
 };
 </script>
